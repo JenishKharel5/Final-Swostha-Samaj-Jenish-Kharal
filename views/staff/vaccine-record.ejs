@@ -1,0 +1,66 @@
+<%- include('../partials/header') %> <% if (success.length > 0) { %>
+<div
+  id="flash-message"
+  class="absolute top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-green-500 text-white"
+>
+  <%= success %>
+</div>
+<% } %>
+
+<!-- Main Content for Doctor Appointments Page -->
+<div
+  class="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="max-w-7xl w-full space-y-8">
+    <div class="bg-white shadow-md rounded-lg p-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+        Program Records
+      </h1>
+
+      <!-- Check if there are any appointments -->
+      <% if (vaccines.length === 0) { %>
+      <p class="text-center text-gray-600 text-lg">No patients record.</p>
+      <% } else { %> <% vaccines.forEach(vaccine => { %>
+      <div
+        class="bg-white shadow-lg rounded-lg p-6 mb-4 grid grid-cols-2 gap-4 border border-gray-200"
+      >
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <img
+              src="<%= vaccine.user_avatar ? '/' + vaccine.user_avatar : 'https://cdn-icons-png.flaticon.com/512/64/64572.png' %>"
+              alt="User Avatar"
+              class="h-10 w-10 rounded-full shadow-md"
+            />
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800">
+                <%= vaccine.user_fullname %>
+              </h2>
+              <p><%= vaccine.user_email %></p>
+            </div>
+          </div>
+          <p class="text-gray-600 text-sm">
+            <strong>Phone:</strong> <%= vaccine.user_phone %>
+          </p>
+          <p class="text-gray-600 text-sm">
+            <strong>Address:</strong> <%= vaccine.user_address %>
+          </p>
+          <p class="text-gray-600 text-sm">
+            <strong>Age:</strong> <%= vaccine.user_age %>
+          </p>
+          <p class="text-gray-600 text-sm">
+            <strong>Sex:</strong> <%= vaccine.user_sex %>
+          </p>
+        </div>
+        <div class="flex flex-col text-gray-800">
+          <h3 class="text-xl font-semibold mb-2">Vaccine Details</h3>
+          <p class="text-sm">Vaccine: <%= vaccine.vaccine_name %></p>
+          <p class="text-sm">Hospital: <%= vaccine.vaccine_hospital %></p>
+          <p class="text-sm">Ticket ID: <%= vaccine.ticketId %></p>
+        </div>
+      </div>
+      <% }); %> <% } %>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

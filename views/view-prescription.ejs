@@ -1,0 +1,74 @@
+<%- include('./partials/header') %>
+
+<!-- Main Content for View Prescription Page -->
+<div
+  class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="max-w-3xl w-full space-y-8">
+    <div class="bg-white/70 backdrop-blur-lg shadow-lg rounded-2xl p-10">
+      <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+        Prescription Details
+      </h1>
+
+      <% prescription.forEach((prescription, index) => { %>
+      <div class="bg-white shadow-md rounded-lg p-6 mb-8 relative print-area">
+        <!-- Print Button for this Prescription -->
+        <button
+          class="absolute top-4 right-4 p-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-md print-btn"
+          data-index="<%= index %>"
+        >
+          <i class="fas fa-print text-lg"></i>
+        </button>
+
+        <!-- Prescription and Doctor Details in One Part -->
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">
+          <%= index + 1 %>. Prescription for <%= prescription.servicename %>
+        </h2>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Medication</label
+            >
+            <p class="mt-1 text-gray-900"><%= prescription.medication %></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Dosage</label
+            >
+            <p class="mt-1 text-gray-900"><%= prescription.dosage %></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Instructions</label
+            >
+            <p class="mt-1 text-gray-900"><%= prescription.instructions %></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Prescribed By</label
+            >
+            <p class="mt-1 text-gray-900">
+              <%= prescription.doctorname %> (Contact: <%=
+              prescription.doctorphone %>)
+            </p>
+          </div>
+
+          <!-- Created At Timestamp -->
+          <div class="text-gray-500 text-xs mt-4">
+            <i class="fas fa-clock"></i> Issued on: <%= new
+            Date(prescription.createdAt).toLocaleString() %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <hr class="border-t-2 border-gray-300 my-8" />
+      <% }) %>
+    </div>
+  </div>
+</div>
+
+<script src="/scripts/print-prescription.js"></script>
+
+<%- include('./partials/footer') %>

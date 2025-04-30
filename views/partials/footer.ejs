@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+    <script>
+        setTimeout(() => {
+            document.getElementById('flash-message')?.classList.add('opacity-0');
+            setTimeout(() => document.getElementById('flash-message')?.remove(), 500);
+        }, 2000);
+    </script>
+    
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white py-10">
+        <div class="max-w-screen-xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-5">
+            <!-- Logo & Copyright -->
+            <div class="flex flex-col items-center sm:items-start">
+                <div class="flex items-center gap-2 mb-4">
+                    <img src="/images/logo/SwosthaSamajLogo.jpeg" alt="Healthcare Logo" class="h-10 w-10 rounded-full">
+                    <h3 class="text-2xl font-semibold">Healthcare</h3>
+                </div>
+                <div class="text-sm text-center sm:text-left">
+                    <p>Hamro health care <br> ramro health care</p>
+                </div>
+            </div>
+
+            <!-- Company Section -->
+            <div class="text-center sm:text-left">
+                <h4 class="font-bold text-lg mb-4">Quick Login</h4>
+                <ul class="space-y-2">
+                    <li><a href="/contact" class="hover:underline">Contact us</a></li>
+                    <li><a href="/contact" class="hover:underline">Help</a></li>
+                    <li><a href="/blog" class="hover:underline">Blog</a></li>
+                </ul>
+            </div>
+
+            <!-- Services Section -->
+            <div class="text-center sm:text-left">
+                <h4 class="font-bold text-lg mb-4">Services</h4>
+                <ul class="space-y-2">
+                    <li><a href="/contact" class="hover:underline">Contact us</a></li>
+                    <li><a href="/contact" class="hover:underline">Help</a></li>
+                    <li><a href="/blog" class="hover:underline">Blog</a></li>
+                </ul>
+            </div>
+
+            <!-- Social Media Section -->
+            <div class="text-center sm:text-left">
+                <h4 class="font-bold text-lg mb-4">Get in Touch</h4>
+                <ul class="space-y-2">
+                    <li class="flex items-center justify-center sm:justify-start gap-2">
+                        <i class="ri-facebook-fill"></i>
+                        <a href="facebook.com" class="hover:underline">Facebook</a>
+                    </li>
+                    <li class="flex items-center justify-center sm:justify-start gap-2">
+                        <i class="ri-twitter-fill"></i>
+                        <a href="x.com" class="hover:underline">Twitter</a>
+                    </li>
+                    <li class="flex items-center justify-center sm:justify-start gap-2">
+                        <i class="ri-instagram-fill"></i>
+                        <a href="instagram.com" class="hover:underline">Instagram</a>
+                    </li>
+                    <li class="flex items-center justify-center sm:justify-start gap-2">
+                        <i class="ri-linkedin-fill"></i>
+                        <a href="#" class="hover:underline">LinkedIn</a>
+                    </li>
+                    <li class="flex items-center justify-center sm:justify-start gap-2">
+                        <i class="ri-youtube-fill"></i>
+                        <a href="youtube.com" class="hover:underline">YouTube</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Contact Section -->
+            <div class="text-center sm:text-left">
+                <h4 class="font-bold text-lg mb-4">Contact Us</h4>
+                <ul class="space-y-2">
+                    <li>
+                        <p class="flex items-center justify-center sm:justify-start gap-2">
+                            <i class="ri-map-pin-fill"></i>
+                            <span>📍 Location: Baneshwor</span>
+                        </p>
+                    </li>
+                    <li>
+                        <p class="flex items-center justify-center sm:justify-start gap-2">
+                            <i class="ri-phone-fill"></i>
+                            <span>📞 Contact: <a href="tel:0152220022" class="hover:underline">01-52220022</a></span>
+                        </p>
+                    </li>
+                    <li>
+                        <p class="flex items-center justify-center sm:justify-start gap-2">
+                            <i class="ri-mail-fill"></i>
+                            <span>📧 Email: <a href="mailto:safasahar@gmail.com" class="hover:underline">SwosthaSamaj@gmail.com</a></span>
+                        </p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Bottom Copyright -->
+        <div class="text-center mt-8 pt-6 border-t border-blue-800">
+            <p class="text-sm">© 2022 Healthcare. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

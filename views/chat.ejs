@@ -1,0 +1,208 @@
+<%- include('./partials/header') %>
+
+<div class="min-h-screen bg-gray-100 flex flex-col">
+  <!-- Main Chat Layout -->
+  <div class="flex flex-1 overflow-hidden">
+    
+    <!-- Sidebar -->
+    <div class="w-full md:w-1/3 lg:w-1/4 bg-white border-r border-gray-200 overflow-y-auto">
+      <div class="p-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
+        <h1 class="text-xl font-bold text-gray-800">Chats</h1>
+        <% if (["admin", "staff"].includes(user.role)) { %>
+          <a href="/chat/users" class="text-blue-500 hover:underline text-sm">+ New Chat</a>
+        <% } %>
+      </div>
+
+      <div class="divide-y divide-gray-100">
+        <% if (["admin", "staff"].includes(user.role)) { %>
+          <% chats.forEach(chat => { %>
+            <a href="/chat/<%= chat.other_user_id %>" 
+              class="flex items-center gap-3 p-3 hover:bg-blue-50 transition-all duration-150 
+              <%= chat.other_user_id === admin.id ? 'bg-blue-100' : 'bg-white' %>">
+              <div class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold uppercase">
+                <%= chat.other_user_name.charAt(0) %>
+              </div>
+              <div class="flex-1">
+                <div class="flex justify-between text-sm font-medium text-gray-700">
+                  <span><%= chat.other_user_name %></span>
+                  <span class="text-xs text-gray-400"><%= new Date(chat.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %></span>
+                </div>
+                <p class="text-xs text-gray-500 truncate mt-0.5"><%= chat.last_message %></p>
+              </div>
+            </a>
+          <% }) %>
+        <% } else { %>
+          <% admins.forEach(adminItem => { %>
+            <a href="/chat/<%= adminItem.id %>" 
+              class="flex items-center gap-3 p-3 hover:bg-blue-50 transition-all duration-150 
+              <%= adminItem.id === admin.id ? 'bg-blue-100' : 'bg-white' %>">
+              <div class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold uppercase">
+                <%= adminItem.fullname.charAt(0) %>
+              </div>
+              <div class="flex-1">
+                <div class="flex justify-between text-sm font-medium text-gray-700">
+                  <span><%= adminItem.fullname %> (<%= adminItem.role %>)</span>
+                  <span class="text-xs text-gray-400">
+                    <%= adminItem.lastLogin ? new Date(adminItem.lastLogin).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A' %>
+                  </span>
+                </div>
+              </div>
+            </a>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="hidden md:flex flex-1 flex-col overflow-hidden">
+      
+      <!-- Header -->
+      <div class="flex items-center gap-3 bg-white border-b border-gray-200 p-4 sticky top-0 z-10">
+        <div class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold uppercase">
+          <%= admin.fullname.charAt(0) %>
+        </div>
+        <h2 class="text-lg font-semibold text-gray-800"><%= admin.fullname %></h2>
+      </div>
+
+      <!-- Messages -->
+      <div id="chat" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50 max-h-[calc(90vh-112px)]">
+        <% messages.forEach(msg => { %>
+          <div class="flex <%= msg.sender_id === user.id ? 'justify-end' : 'justify-start' %>">
+            <div class="max-w-md px-4 py-2 rounded-2xl shadow-sm text-sm transition-all duration-150 
+              <%= msg.sender_id === user.id ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white text-gray-900 rounded-bl-none border border-gray-200' %>">
+              <p><%= msg.content %></p>
+              <span class="block text-xs mt-1 opacity-75 <%= msg.sender_id === user.id ? 'text-blue-100' : 'text-gray-400' %>">
+                <%= new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+              </span>
+            </div>
+          </div>
+        <% }) %>
+
+        <!-- Typing Indicator -->
+        <div id="typingIndicator" class="hidden flex justify-start">
+          <div class="px-4 py-2 rounded-2xl bg-gray-300 text-gray-700 text-sm">
+            <span class="typing-dots">Typing</span>
+            <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Input -->
+      <div class="bg-white p-3 border-t border-gray-200 flex items-center space-x-3">
+        <input id="messageInput" type="text" placeholder="Aa"
+          class="flex-1 px-4 py-2 text-sm rounded-full border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" />
+        <button id="sendButton" onclick="sendMessage()"
+          class="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .dot {
+    animation: dot-flashing 1s infinite linear alternate;
+    margin-left: 2px;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dot-flashing {
+    0% { opacity: 0.2; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0.2; transform: scale(1); }
+  }
+</style>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io('http://localhost:3000', {
+    withCredentials: true,
+    transports: ['websocket', 'polling']
+  });
+
+  const userId = <%= user.id %>;
+  const adminId = <%= admin.id %>;
+  const room = '<%= room %>';
+
+  const chat = document.getElementById('chat');
+  const messageInput = document.getElementById('messageInput');
+  const sendButton = document.getElementById('sendButton');
+  const typingIndicator = document.getElementById('typingIndicator');
+
+  socket.on('connect', () => {
+    socket.emit('joinRoom', { userId, adminId });
+  });
+
+  socket.on('connect_error', (error) => {
+    alert('Failed to connect: ' + error.message);
+  });
+
+  socket.on('error', (msg) => {
+    alert('Server error: ' + msg);
+  });
+
+  socket.on('receiveMessage', (msg) => {
+    const div = document.createElement('div');
+    div.className = `flex ${msg.sender_id === userId ? 'justify-end' : 'justify-start'}`;
+    div.innerHTML = `
+      <div class="max-w-md px-4 py-2 rounded-2xl shadow-sm text-sm transition-all duration-150 
+        ${msg.sender_id === userId ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'}">
+        <p>${msg.content}</p>
+        <span class="block text-xs mt-1 opacity-75 ${msg.sender_id === userId ? 'text-blue-100' : 'text-gray-400'}">
+          ${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </span>
+      </div>
+    `;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    typingIndicator.classList.add('hidden');
+  });
+
+  // Typing logic
+  let typingTimeout;
+  messageInput.addEventListener('input', () => {
+    socket.emit('typing', { userId, adminId, room });
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      socket.emit('stopTyping', { userId, adminId, room });
+    }, 1000);
+  });
+
+  socket.on('typing', () => {
+    typingIndicator.classList.remove('hidden');
+    chat.scrollTop = chat.scrollHeight;
+  });
+
+  socket.on('stopTyping', () => {
+    typingIndicator.classList.add('hidden');
+  });
+
+  function sendMessage() {
+    const content = messageInput.value.trim();
+    if (!content) return;
+
+    sendButton.disabled = true;
+    socket.emit('sendMessage', { userId, adminId, content }, (response) => {
+      sendButton.disabled = false;
+      if (response?.error) {
+        alert('Failed to send message: ' + response.error);
+      }
+    });
+
+    messageInput.value = '';
+    socket.emit('stopTyping', { userId, adminId, room });
+  }
+
+  messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  });
+
+  chat.scrollTop = chat.scrollHeight;
+</script>
+
+<%- include('./partials/footer') %>

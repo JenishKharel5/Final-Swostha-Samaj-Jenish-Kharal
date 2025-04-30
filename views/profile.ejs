@@ -1,0 +1,129 @@
+<%- include('./partials/header') %> <% if (success.length > 0) { %>
+<div
+  id="flash-message"
+  class="absolute top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-green-500 text-white shadow-lg transition-opacity duration-500"
+>
+  <%= success %>
+</div>
+<% } %> <% if (error.length > 0) { %>
+<div
+  id="flash-message"
+  class="absolute top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-red-500 text-white shadow-lg transition-opacity duration-500"
+>
+  <%= error %>
+</div>
+<% } %>
+
+<!-- Main Content for My Profile Page -->
+<div
+  class="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="max-w-3xl w-full space-y-8">
+    <div class="bg-white shadow-md rounded-lg p-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+        My Profile
+      </h1>
+
+      <!-- Profile Information Section -->
+      <div class="flex items-center space-x-4">
+        <!-- Avatar -->
+        <div
+          class="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden"
+        >
+          <img
+            src="<%= user.avatar ? '/' + user.avatar : 'https://cdn-icons-png.flaticon.com/512/64/64572.png' %>"
+            alt="Avatar"
+            class="w-full h-full object-cover"
+          />
+        </div>
+
+        <!-- User Details -->
+        <div>
+          <h2 class="text-2xl font-semibold text-gray-800">
+            <%= user.fullname %>
+          </h2>
+          <p class="text-gray-600"><%= user.email %></p>
+        </div>
+      </div>
+
+      <!-- Upload Avatar Form -->
+      <div class="mt-4">
+        <form
+          action="/users/upload-avatar"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <label class="block text-sm font-medium text-gray-700"
+            >Upload Avatar</label
+          >
+          <input
+            type="file"
+            name="avatar"
+            class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+          />
+          <button
+            type="submit"
+            class="mt-2 inline-flex items-center px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-blue-600 transition duration-300"
+          >
+            Upload
+          </button>
+        </form>
+      </div>
+
+      <!-- Additional Profile Information (Horizontal Layout) -->
+      <div class="mt-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+          Personal Information
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4">
+            <label class="block text-sm font-medium text-gray-700"
+              >Full Name</label
+            >
+            <p class="mt-1 text-gray-900"><%= user.fullname %></p>
+          </div>
+          <div class="p-4">
+            <label class="block text-sm font-medium text-gray-700"
+              >Email Address</label
+            >
+            <p class="mt-1 text-gray-900"><%= user.email %></p>
+          </div>
+          <div class="p-4">
+            <label class="block text-sm font-medium text-gray-700"
+              >Phone Number</label
+            >
+            <p class="mt-1 text-gray-900">
+              <%= user.phone || "Not provided" %>
+            </p>
+          </div>
+          <div class="p-4">
+            <label class="block text-sm font-medium text-gray-700"
+              >Address</label
+            >
+            <p class="mt-1 text-gray-900"><%= user.address %></p>
+          </div>
+          <div class="p-4">
+            <label class="block text-sm font-medium text-gray-700">Age</label>
+            <p class="mt-1 text-gray-900"><%= user.age %></p>
+          </div>
+          <div class="p-4">
+            <label class="block text-sm font-medium text-gray-700">Sex</label>
+            <p class="mt-1 text-gray-900"><%= user.sex %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Profile Button -->
+      <div class="mt-6 text-center">
+        <a
+          href="/users/edit-profile"
+          class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-teal-500 to-blue-500 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-blue-600 transition duration-300"
+        >
+          Edit Profile
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

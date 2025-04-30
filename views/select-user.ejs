@@ -1,0 +1,67 @@
+<%- include('./partials/header') %>
+
+<div class="min-h-screen bg-gray-100 flex">
+  <!-- Sidebar -->
+  <div class="w-1/4 bg-white shadow-lg border-r border-gray-200">
+    <div class="p-4 border-b border-gray-200">
+      <h1 class="text-xl font-bold text-gray-800">Chats</h1>
+      <a href="/chat/users" class="text-blue-500 hover:underline text-sm">Start a new chat</a>
+    </div>
+    <div class="overflow-y-auto" style="height: calc(100vh - 80px)">
+      <% if (chats.length === 0 && users) { %>
+        <% users.forEach(user => { %>
+          <a href="/chat/<%= user.id %>" class="block p-4 border-b border-gray-200 hover:bg-gray-50 transition duration-200">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
+                <span class="text-white font-semibold">
+                  <%= user.fullname.charAt(0).toUpperCase() %>
+                </span>
+              </div>
+              <div class="flex-1">
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-800"><%= user.fullname %> (User)</span>
+                  <span class="text-sm text-gray-500">
+                    <%= user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'N/A' %>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </a>
+        <% }) %>
+      <% } else if (chats.length === 0) { %>
+        <p class="p-4 text-gray-600">No recent chats. Start a new conversation!</p>
+      <% } else { %>
+        <% chats.forEach(chat => { %>
+          <a href="/chat/<%= chat.other_user_id %>" class="block p-4 border-b border-gray-200 hover:bg-gray-50 transition duration-200">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
+                <span class="text-white font-semibold">
+                  <%= chat.other_user_name.charAt(0).toUpperCase() %>
+                </span>
+              </div>
+              <div class="flex-1">
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-800"><%= chat.other_user_name %></span>
+                  <span class="text-sm text-gray-500">
+                    <%= new Date(chat.last_message_time).toLocaleTimeString() %>
+                  </span>
+                </div>
+                <p class="text-sm text-gray-600 truncate"><%= chat.last_message %></p>
+              </div>
+            </div>
+          </a>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="w-3/4 flex items-center justify-center">
+    <div class="text-center">
+      <h2 class="text-2xl font-semibold text-gray-700">Select a user to start chatting</h2>
+      <p class="text-gray-500 mt-2">Choose a user from the list to begin your conversation.</p>
+    </div>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

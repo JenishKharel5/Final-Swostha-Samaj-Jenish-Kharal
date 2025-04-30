@@ -1,0 +1,107 @@
+<%- include('./partials/header') %> <% if (success.length > 0) { %>
+<div
+  id="flash-message"
+  class="absolute top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-green-500 text-white"
+>
+  <%= success %>
+</div>
+<% } %>
+
+<!-- Main Content for My Appointments Page -->
+<div
+  class="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="max-w-7xl w-full space-y-8">
+    <div class="bg-white shadow-md rounded-lg p-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+        My Appointments
+      </h1>
+
+      <!-- Appointments Table -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                User Name
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Email
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Phone
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Date
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Time
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Service
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <% appointments.forEach(appointment => { %>
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <%= appointment.user_fullname %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <%= appointment.user_email %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <%= appointment.user_phone %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <%= new Date(appointment.date).toDateString() %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <%= appointment.time %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <%= appointment.service %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <!-- Delete Appointment (Trash) -->
+                <form
+                  action="/users/myappointments/delete/<%= appointment.id %>"
+                  method="POST"
+                  style="display: inline"
+                >
+                  <button
+                    type="submit"
+                    class="text-red-500 hover:text-red-700 ml-6"
+                  >
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

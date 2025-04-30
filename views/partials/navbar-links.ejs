@@ -1,0 +1,31 @@
+<a
+  href="/"
+  class="hover:text-yellow-600"
+  :class="{ 'text-yellow-700': isActive('/') }"
+  >Home</a
+>
+<a
+  href="/service"
+  class="hover:text-yellow-600"
+  :class="{ 'text-yellow-700': isActive('/service') }"
+  >Service</a
+>
+<a
+  href="/contact"
+  class="hover:text-yellow-600"
+  :class="{ 'text-yellow-700': isActive('/contact') }"
+  >Contact Us</a
+>
+<% if (hasAcceptedAppointment  || (loggedin && user.role === 'admin') || (loggedin && user.role === 'staff')) { %>
+  <a
+    href="/chat"
+    class="hover:text-yellow-600"
+    :class="{ 'text-yellow-700': isActive('/blog') }"
+  >Chat</a>
+<% } %>
+<a
+  href="/blog"
+  class="hover:text-yellow-600"
+  :class="{ 'text-yellow-700': isActive('/blog') }"
+  >Blogs</a
+>

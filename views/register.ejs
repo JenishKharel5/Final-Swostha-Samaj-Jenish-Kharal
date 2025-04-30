@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swostha Samaj - Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .form-container {
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .input-field {
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+        
+        .submit-btn {
+            background-image: linear-gradient(to right, #3b82f6, #10b981);
+            box-shadow: 0 4px 15px 0 rgba(59, 130, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.4);
+        }
+
+        .password-strength {
+            height: 4px;
+            margin-top: 4px;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .side-image {
+            background-image: url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80');
+            background-size: cover;
+            background-position: center;
+            border-radius: 0 1rem 1rem 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <%- include('./partials/header') %>
+
+    <% if (error.length > 0) { %>
+        <div id="flash-message" class="fixed top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-red-500 text-white shadow-lg animate-fade-in z-50">
+            <%= error %>
+        </div>
+    <% } %>
+
+    <% if (success.length > 0) { %>
+        <div id="flash-message" class="fixed top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-green-500 text-white shadow-lg animate-fade-in z-50">
+            <%= success %>
+        </div>
+    <% } %>
+
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-5xl w-full flex rounded-xl shadow-xl overflow-hidden">
+            <div class="form-container w-full md:w-1/2 p-8 md:p-10">
+                <div class="text-center mb-8">
+                    <h3 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-600 mb-2">
+                        Welcome to Swostha Samaj
+                    </h3>  
+                    <h4 class="text-xl font-semibold text-gray-700">
+                        Create your account
+                    </h4>
+                </div>
+                <form autocomplete="off" action="/users/register" method="post" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Full Name -->
+                        <div class="relative">
+                            <input 
+                                class="input-field w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
+                                type="text" 
+                                placeholder="Full Name" 
+                                name="fullname" 
+                                required
+                            >
+                        </div>
+
+                        <!-- Email -->
+                        <div class="relative">
+                            <input 
+                                class="input-field w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
+                                type="email" 
+                                placeholder="Email" 
+                                name="email" 
+                                pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                required
+                            >
+                        </div>
+
+                        <!-- Password -->
+                        <div class="relative">
+                            <input 
+                                class="input-field w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
+                                type="password" 
+                                placeholder="Password" 
+                                name="password" 
+                                id="password"
+                                pattern="^(?=.*\d).{8,}$"
+                                required
+                                oninput="validatePassword()"
+                            >
+                            <div id="password-strength" class="password-strength w-full bg-gray-200">
+                                <div id="strength-meter" class="password-strength h-full w-0"></div>
+                            </div>
+                            <p id="password-error" class="text-xs text-red-500 mt-1 hidden">Password must be at least 8 characters long and contain a number</p>
+                        </div>
+
+                        <!-- Address -->
+                        <div class="relative">
+                            <input 
+                                class="input-field w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
+                                type="text" 
+                                placeholder="Address" 
+                                name="address" 
+                                required
+                            >
+                        </div>
+
+                        <!-- Age -->
+                        <div class="relative">
+                            <input 
+                                class="input-field w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
+                                type="number" 
+                                placeholder="Age" 
+                                name="age" 
+                                required
+                            >
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="relative">
+                            <input 
+                                class="input-field w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
+                                type="tel" 
+                                placeholder="Phone" 
+                                name="phone" 
+                                pattern="[0-9]{10}"
+                                maxlength="10"
+                                required
+                            >
+                        </div>
+
+                        <!-- Sex -->
+                        <div class="relative">
+                            <select 
+                                class="input-field w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
+                                name="sex" 
+                                required
+                            >
+                                <option value="" disabled selected>Select Sex</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div>
+                        <input 
+                            class="submit-btn w-full px-5 py-3 text-white rounded-lg cursor-pointer font-medium"
+                            type="submit" 
+                            value="Create My Account"
+                            id="submit-btn"
+                        >
+                    </div>
+                </form>
+            </div>
+            <div class="hidden md:block md:w-1/2 side-image"></div>
+        </div>
+    </div>
+
+    <%- include('./partials/footer') %>
+
+    <script>
+        function validatePassword() {
+            const password = document.getElementById('password').value;
+            const strengthMeter = document.getElementById('strength-meter');
+            const passwordError = document.getElementById('password-error');
+            const submitBtn = document.getElementById('submit-btn');
+            
+            // Check password length and if it contains a number
+            const hasNumber = /\d/.test(password);
+            const isValid = password.length >= 8 && hasNumber;
+            
+            // Update strength meter
+            let strength = 0;
+            if (password.length > 0) strength += 25;
+            if (password.length >= 8) strength += 25;
+            if (hasNumber) strength += 25;
+            if (/[A-Z]/.test(password)) strength += 25;
+            
+            strengthMeter.style.width = strength + '%';
+            
+            // Set color based on strength
+            if (strength < 50) {
+                strengthMeter.style.backgroundColor = '#ef4444';
+            } else if (strength < 75) {
+                strengthMeter.style.backgroundColor = '#f59e0b';
+            } else {
+                strengthMeter.style.backgroundColor = '#10b981';
+            }
+            
+            // Show/hide error message
+            if (password.length > 0 && !isValid) {
+                passwordError.classList.remove('hidden');
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50');
+            } else {
+                passwordError.classList.add('hidden');
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50');
+            }
+        }
+
+        // Auto-hide flash messages after 5 seconds
+        setTimeout(() => {
+            const flashMessages = document.querySelectorAll('#flash-message');
+            flashMessages.forEach(message => {
+                message.style.display = 'none';
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

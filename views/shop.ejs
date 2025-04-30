@@ -1,0 +1,81 @@
+<%- include('./partials/header') %>
+
+<!-- Flash Message (Success) -->
+<% if(success.length > 0) { %>
+  <div id="flash-message" class="absolute top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-blue-500 text-white shadow-lg transition-opacity duration-500">
+      <%= success %>
+  </div>
+<% } %>
+
+<!-- Main Shop Layout -->
+<div class="w-full min-h-screen flex flex-col md:flex-row px-5 md:px-20 py-10 gap-10">
+
+  <!-- Sidebar -->
+  <aside class="w-full md:w-1/4 flex flex-col gap-8">
+    
+    <!-- Sort By -->
+    <div>
+      <h3 class="font-semibold text-lg">Sort By</h3>
+      <form action="/shop">
+        <select class="border px-3 py-2 rounded-md w-full mt-2 bg-white shadow-sm focus:outline-none" name="sortby">
+          <option value="popular">Popular</option>
+          <option value="newest">Newest</option>
+        </select>
+      </form>
+    </div>
+
+    <!-- Category Links -->
+    <div>
+      <h3 class="font-semibold text-lg">Categories</h3>
+      <div class="flex flex-col mt-3 gap-2">
+        <a class="block text-gray-700 hover:text-blue-500" href="#">New Collection</a>
+        <a class="block text-gray-700 hover:text-blue-500" href="#">All Products</a>
+        <a class="block text-gray-700 hover:text-blue-500" href="#">Discounted Products</a>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div>
+      <h3 class="font-semibold text-lg">Filters</h3>
+      <div class="flex flex-col mt-3 gap-2">
+        <a class="block text-gray-700 hover:text-blue-500" href="#">Availability</a>
+        <a class="block text-gray-700 hover:text-blue-500" href="#">Discount</a>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- Products Section -->
+  <section class="w-full md:w-3/4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      
+      <% product.forEach(function(product){ %>
+      <div class="w-full bg-white rounded-xl shadow-md overflow-hidden transition-transform hover:scale-105">
+        
+        <!-- Product Image -->
+        <div class="w-full h-52 flex items-center justify-center bg-[<%= product.bgcolor %>]">
+          <img class="h-[12rem] object-cover" src="data:image/jpeg;base64,<%= product.image ? product.image.toString('base64') : '' %>" alt="<%= product.name %>" />
+        </div>
+
+        <!-- Product Details -->
+        <div class="flex justify-between bg-[<%= product.panelcolor %>] items-center px-5 py-4 text-[<%= product.textcolor %>]">
+          <div>
+            <h3 class="font-semibold text-lg"><%= product.name %></h3>
+            <h4 class="text-gray-700 font-medium">₹ <%= product.price %></h4>
+          </div>
+          
+          <!-- Add to Cart Button -->
+          <a class="w-9 h-9 flex items-center justify-center rounded-full bg-blue-500 text-white hover:bg-blue-600 transition" href="/addtocart/<%= product._id %>">
+            <i class="ri-add-line text-lg"></i>
+          </a>
+        </div>
+
+      </div>
+      <% }) %>
+
+    </div>
+  </section>
+
+</div>
+
+<%- include('./partials/footer') %>

@@ -1,0 +1,35 @@
+<% if (loggedin && role === 'admin') { %>
+    <a
+      href="/doctor/doctor-dashboard"
+      class="hover:text-yellow-600"
+      :class="{ 'text-yellow-700': isActive('/admin-dashboard') }"
+      >Admin Dashboard</a
+    >
+  <% } %>
+  
+  <% if (loggedin && role === 'doctor') { %>
+    <a
+      href="/doctor-dashboard"
+      class="hover:text-yellow-600"
+      :class="{ 'text-yellow-700': isActive('/doctor-dashboard') }"
+      >Doctor Dashboard</a
+    >
+  <% } %>
+  
+  <% if (loggedin && role === 'staff') { %>
+    <a
+      href="/staff/staff-dashboard"
+      class="hover:text-yellow-600"
+      :class="{ 'text-yellow-700': isActive('/staff-dashboard') }"
+      >Staff Dashboard</a
+    >
+  <% } %>
+  
+  <% if (loggedin && role === 'user') { %>
+    <a
+      href="/users/user-dashboard"
+      class="hover:text-yellow-600"
+      :class="{ 'text-yellow-700': isActive('/user-dashboard') }"
+      >User Dashboard</a
+    >
+  <% } %>

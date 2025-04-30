@@ -1,0 +1,122 @@
+<%- include('./partials/header') %> 
+
+
+<% } %> <% if (user.cart.length === 0) { %>
+<div class="w-full text-center py-10">
+  <h2 class="text-xl font-semibold text-gray-500">
+    No items added to the cart.
+  </h2>
+</div>
+<% } else { %>
+<div class="w-full min-h-screen px-5 md:px-20 py-10 flex flex-col gap-10">
+  <% user.cart.forEach(function(item) { let totalPrice = (Number(item.price) -
+  Number(item.discount) + 20); %>
+
+  <div
+    class="flex flex-col md:flex-row items-start gap-10 bg-white shadow-lg rounded-lg p-5 md:p-8"
+  >
+    <!-- Product Image Section -->
+    <div class="w-full md:w-[30%] rounded-md overflow-hidden">
+      <div
+        class="w-full flex justify-center items-center h-80 bg-[<%= item.bgcolor %>] rounded-t-lg"
+      >
+        <img
+          class="h-[18rem] object-cover"
+          src="data:image/jpeg;base64,<%= item.image.toString('base64') %>"
+          alt="<%= item.name %>"
+        />
+      </div>
+
+      <!-- Product Info -->
+      <div
+        class="w-full flex justify-between px-5 py-4 bg-[<%= item.panelcolor %>] rounded-b-lg"
+      >
+        <h3 class="text-2xl font-semibold"><%= item.name %></h3>
+
+        <!-- Quantity Buttons -->
+        <div class="flex items-center gap-3">
+          <a
+            href="/cart/decrease/<%= item._id %>"
+            class="w-8 h-8 bg-white flex items-center justify-center rounded-full shadow-md hover:bg-gray-200 transition"
+          >
+            <i class="ri-subtract-line text-lg"></i>
+          </a>
+          <div class="px-3 py-1 rounded-md bg-white text-black font-semibold">
+            <%= item.quantity %>
+          </div>
+          <a
+            href="/cart/increase/<%= item._id %>"
+            class="w-8 h-8 bg-white flex items-center justify-center rounded-full shadow-md hover:bg-gray-200 transition"
+          >
+            <i class="ri-add-line text-lg"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Total Price Section -->
+      <div
+        class="flex text-white items-center justify-between px-5 py-3 bg-[<%= item.textcolor %>] rounded-b-lg"
+      >
+        <h4 class="text-lg font-medium">Net Total</h4>
+        <h2 class="text-lg font-semibold">Rs. <%= item.price %></h2>
+      </div>
+    </div>
+
+    <!-- Price Breakdown -->
+    <div class="w-full md:w-[70%] bg-gray-50 p-5 md:p-8 rounded-md shadow-md">
+      <h3 class="text-xl font-bold mb-4">Price Breakdown</h3>
+      <div class="space-y-3 text-gray-800">
+        <div class="flex justify-between">
+          <h4 class="font-medium">Total MRP</h4>
+          <h4>Rs. <%= item.price%></h4>
+        </div>
+
+        <div class="flex justify-between">
+          <h4 class="font-medium">Discount</h4>
+          <h4 class="text-red-500">- Rs. <%= Number(item.discount)%></h4>
+        </div>
+
+        <div class="flex justify-between">
+          <h4 class="font-medium">Platform Fee</h4>
+          <h4>Rs. 20</h4>
+        </div>
+
+        <div class="flex justify-between">
+          <h4 class="font-medium">Shipping Fee</h4>
+          <h4 class="text-green-600">FREE</h4>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="w-full h-[1px] bg-gray-300 my-6"></div>
+
+      <!-- Final Amount -->
+      <div class="flex justify-between items-center">
+        <h3 class="text-xl font-semibold">Total Amount</h3>
+        <h3 class="font-bold text-xl text-green-600">Rs. <%= totalPrice %></h3>
+      </div>
+
+      <!-- Checkout Button -->
+      <form action="/checkout" method="POST" class="mt-6">
+        <button
+          type="submit"
+          class="w-full bg-blue-600 text-white font-semibold py-3 rounded-md shadow-md hover:bg-blue-700 transition"
+        >
+          Proceed to Checkout
+        </button>
+      </form>
+      <!-- Delete Button -->
+      <form action="/cart/delete/<%= item._id %>" method="POST" class="mt-3">
+        <button
+          type="submit"
+          class="w-full bg-red-500 text-white font-semibold py-3 rounded-md shadow-md hover:bg-red-600 transition flex items-center justify-center gap-2"
+        >
+          <i class="ri-delete-bin-6-line"></i> Remove from Cart
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <% }); %>
+</div>
+<% } %> <%- include('./partials/footer') %>

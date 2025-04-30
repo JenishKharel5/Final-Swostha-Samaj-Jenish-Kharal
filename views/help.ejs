@@ -1,0 +1,79 @@
+<%- include('./partials/header') %>
+
+<div class="min-h-screen bg-gray-100 py-12">
+    <div class="container mx-auto px-6">
+        <!-- Page Heading -->
+        <h1 class="text-4xl font-bold text-center mb-8">Help Center</h1>
+        <p class="text-lg text-gray-600 text-center mb-12">We're here to help! Find answers to common questions or contact us for further assistance.</p>
+
+        <!-- FAQ Section -->
+        <div class="bg-white p-8 rounded-lg shadow-lg mb-12">
+            <h2 class="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
+            <div class="space-y-4">
+                <!-- FAQ Item 1 -->
+                <div class="border-b border-gray-200 pb-4">
+                    <h3 class="text-lg font-semibold">How do I place an order?</h3>
+                    <p class="text-gray-600 mt-2">You can place an order online through our website or by visiting our store. Simply add products to your cart and proceed to checkout.</p>
+                </div>
+
+                <!-- FAQ Item 2 -->
+                <div class="border-b border-gray-200 pb-4">
+                    <h3 class="text-lg font-semibold">What payment methods do you accept?</h3>
+                    <p class="text-gray-600 mt-2">We accept all major credit cards, debit cards, and cash on delivery. Online payments are processed securely.</p>
+                </div>
+
+                <!-- FAQ Item 3 -->
+                <div class="border-b border-gray-200 pb-4">
+                    <h3 class="text-lg font-semibold">Do you offer home delivery?</h3>
+                    <p class="text-gray-600 mt-2">Yes, we offer home delivery for all orders. Delivery times may vary depending on your location.</p>
+                </div>
+
+                <!-- FAQ Item 4 -->
+                <div class="border-b border-gray-200 pb-4">
+                    <h3 class="text-lg font-semibold">How can I track my order?</h3>
+                    <p class="text-gray-600 mt-2">Once your order is shipped, you will receive a tracking number via email. You can use this number to track your order on our website.</p>
+                </div>
+
+                <!-- FAQ Item 5 -->
+                <div class="border-b border-gray-200 pb-4">
+                    <h3 class="text-lg font-semibold">What is your return policy?</h3>
+                    <p class="text-gray-600 mt-2">We accept returns within 30 days of purchase. Please ensure the product is unused and in its original packaging.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Form for Additional Help -->
+        <div class="bg-white p-8 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-bold mb-6">Need More Help?</h2>
+            <p class="text-gray-600 mb-6">If you didn't find the answer to your question, feel free to contact us directly. Our team will get back to you as soon as possible.</p>
+            <form class="space-y-6">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                    <input type="text" id="name" name="name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email" name="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div>
+                    <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+                    <textarea id="message" name="message" rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required></textarea>
+                </div>
+                <div>
+                    <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">Send Message</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Call to Action Section -->
+        <div class="bg-blue-50 mt-16 py-12">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-3xl font-bold mb-4">Still Have Questions?</h2>
+                <p class="text-gray-600 mb-8">Our team is available 24/7 to assist you with any queries or concerns.</p>
+                <a href="/contact" class="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-700 transition duration-300">Contact Us</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('./partials/footer') %>

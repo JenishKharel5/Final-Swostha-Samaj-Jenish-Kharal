@@ -1,0 +1,114 @@
+<%- include('../partials/header') %>
+
+<!-- Main Content for Doctor Dashboard -->
+<div
+  class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="max-w-7xl w-full space-y-8">
+    <div class="bg-white/70 backdrop-blur-lg shadow-lg rounded-2xl p-10">
+      <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center">
+        Doctor Dashboard
+      </h1>
+
+      <!-- Quick Actions -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <a
+          href="/view-medical-records"
+          class="bg-blue-500 text-white p-6 rounded-lg shadow-md hover:bg-blue-600 transition duration-300"
+        >
+          <h2 class="text-xl font-semibold">View Medical Records</h2>
+          <p class="text-sm">Access patient medical history.</p>
+        </a>
+        <a
+          href="/doctor/add-prescription/"
+          class="bg-green-500 text-white p-6 rounded-lg shadow-md hover:bg-green-600 transition duration-300"
+        >
+          <h2 class="text-xl font-semibold">Add Prescription</h2>
+          <p class="text-sm">Prescribe medication for patients.</p>
+        </a>
+        <a
+          href="/doctor/doctor-appointments"
+          class="bg-purple-500 text-white p-6 rounded-lg shadow-md hover:bg-purple-600 transition duration-300"
+        >
+          <h2 class="text-xl font-semibold">View Appointments</h2>
+          <p class="text-sm">Check upcoming appointments.</p>
+        </a>
+      </div>
+
+      <!-- Upcoming Appointments -->
+      <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">
+          Upcoming Appointments
+        </h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Patient Name
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Date
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Time
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Service
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% appointments.forEach(appointment => { %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <%= appointment.user_fullname %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <%= new Date(appointment.date).toDateString() %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <%= appointment.time %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <%= appointment.service %>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Patient Statistics -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white shadow-md rounded-lg p-6">
+          <h2 class="text-xl font-bold text-gray-800">Total Patients</h2>
+          <p class="text-3xl font-semibold text-blue-500">
+            <%= totalPatients %>
+          </p>
+        </div>
+        <div class="bg-white shadow-md rounded-lg p-6">
+          <h2 class="text-xl font-bold text-gray-800">Appointments Today</h2>
+          <p class="text-3xl font-semibold text-green-500">
+            <%= appointmentsToday %>
+          </p>
+        </div>
+        <div class="bg-white shadow-md rounded-lg p-6">
+          <h2 class="text-xl font-bold text-gray-800">Recent Activity</h2>
+          <p class="text-sm text-gray-600">Last login: <%= lastLogin %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

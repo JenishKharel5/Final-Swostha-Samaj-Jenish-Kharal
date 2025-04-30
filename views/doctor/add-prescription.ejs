@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Prescription</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .form-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+    }
+    .input-field {
+      transition: all 0.3s ease;
+      border: 1px solid #e2e8f0;
+    }
+    .input-field:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .submit-btn {
+      background-image: linear-gradient(to right, #3b82f6, #6366f1);
+      transition: all 0.3s ease;
+    }
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/header') %>
+  <% if (success.length > 0) { %>
+  <div
+    id="flash-message"
+    class="fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full bg-green-500 text-white shadow-lg flex items-center space-x-2 z-50"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+    </svg>
+    <span><%= success %></span>
+  </div>
+  <% } %>
+
+  <!-- Main Content -->
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-2xl">
+      <div class="form-card rounded-xl overflow-hidden shadow-xl">
+        <div class="p-8">
+          <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Add Prescription</h1>
+            <p class="text-gray-600">Fill out the form below to create a new prescription</p>
+          </div>
+
+          <form action="/doctor/add-prescription" method="POST" class="space-y-6">
+            <!-- Select User -->
+            <div>
+              <label for="user" class="block text-sm font-medium text-gray-700 mb-2">Patient</label>
+              <select
+                id="user"
+                name="user"
+                class="input-field w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="" disabled selected>Select a patient</option>
+                <% appointments.forEach(appointment => { %>
+                <option value="<%= appointment.user_id %>">
+                  <%= appointment.user_fullname %> - <%= appointment.service %>
+                </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <!-- Medication -->
+            <div>
+              <label for="medication" class="block text-sm font-medium text-gray-700 mb-2">Medication</label>
+              <input
+                type="text"
+                id="medication"
+                name="medication"
+                placeholder="e.g. Amoxicillin"
+                class="input-field w-full px-4 py-3 rounded-lg focus:outline-none"
+                required
+              />
+            </div>
+
+            <!-- Dosage -->
+            <div>
+              <label for="dosage" class="block text-sm font-medium text-gray-700 mb-2">Dosage</label>
+              <input
+                type="text"
+                id="dosage"
+                name="dosage"
+                placeholder="e.g. 500mg twice daily"
+                class="input-field w-full px-4 py-3 rounded-lg focus:outline-none"
+                required
+              />
+            </div>
+
+            <!-- Instructions -->
+            <div>
+              <label for="instructions" class="block text-sm font-medium text-gray-700 mb-2">Instructions</label>
+              <textarea
+                id="instructions"
+                name="instructions"
+                rows="4"
+                placeholder="Special instructions for the patient..."
+                class="input-field w-full px-4 py-3 rounded-lg focus:outline-none"
+                required
+              ></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              class="submit-btn w-full text-white font-medium py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Create Prescription
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    // Flash message fade out
+    setTimeout(() => {
+      const flashMessage = document.getElementById('flash-message');
+      if (flashMessage) {
+        flashMessage.style.transition = 'opacity 0.5s ease';
+        flashMessage.style.opacity = '0';
+        setTimeout(() => flashMessage.remove(), 500);
+      }
+    }, 3000);
+  </script>
+</body>
+</html>

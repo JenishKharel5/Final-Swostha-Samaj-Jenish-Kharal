@@ -1,0 +1,50 @@
+<%- include('./partials/header') %>
+
+<!-- Main Content for Vaccine Ticket Page -->
+<div
+  class="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="max-w-md w-full space-y-8">
+    <div class="bg-white shadow-md rounded-lg p-6 relative print-area">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Program Booking Ticket</h1>
+        <!-- Print Button -->
+        <button
+          class="p-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-md print-btn"
+        >
+          <i class="fas fa-print text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Ticket Details -->
+      <div class="space-y-4">
+        <h2 class="text-xl font-bold text-gray-800">
+          Ticket ID: <%= booking.ticketId %>
+        </h2>
+        <p class="text-sm text-gray-600">
+          <strong>User:</strong> <%= booking.user_fullname %>
+        </p>
+        <p class="text-sm text-gray-600">
+          <strong>Email:</strong> <%= booking.user_email %>
+        </p>
+        <p class="text-sm text-gray-600">
+          <strong>Program:</strong> <%= booking.vaccine_name %>
+        </p>
+        <p class="text-sm text-gray-600">
+          <strong>Hospital:</strong> <%= booking.vaccine_hospital %>
+        </p>
+        <p class="text-sm text-gray-600">
+          <strong>Booking Date:</strong> <%= new
+          Date(booking.bookingDate).toLocaleString() %>
+        </p>
+        <p class="text-sm text-gray-600">
+          <strong>Status:</strong> <%= booking.status %>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/scripts/print-ticket.js"></script>
+
+<%- include('./partials/footer') %>

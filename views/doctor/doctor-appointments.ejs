@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointments</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .appointment-row:hover {
+      background-color: #f8fafc;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .action-btn {
+      transition: all 0.2s ease;
+    }
+    .action-btn:hover {
+      transform: scale(1.1);
+    }
+    .status-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .accepted-badge {
+      background-color: #ecfdf5;
+      color: #059669;
+    }
+    .pending-badge {
+      background-color: #eff6ff;
+      color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/header') %>
+  
+  <% if (success.length > 0) { %>
+  <div
+    id="flash-message"
+    class="fixed top-5 left-1/2 -translate-x-1/2 p-4 rounded-lg bg-green-500 text-white shadow-lg z-50 flex items-center space-x-2 animate-fade-in"
+  >
+    <i class="fas fa-check-circle"></i>
+    <span><%= success %></span>
+  </div>
+  <% } %>
+
+  <!-- Main Content -->
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+        <!-- Header Section -->
+        <div class="bg-indigo-600 px-6 py-4">
+          <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-white">
+              <i class="fas fa-calendar-check mr-2"></i> Appointments
+            </h1>
+            <div class="text-indigo-100">
+              <i class="fas fa-user-md mr-1"></i> Doctor Dashboard
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Section -->
+        <div class="p-6">
+          <% if (appointment.length === 0) { %>
+          <div class="text-center py-12">
+            <div class="mx-auto h-24 w-24 text-gray-400 mb-4">
+              <i class="fas fa-calendar-times text-6xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No appointments scheduled</h3>
+            <p class="text-gray-500">You don't have any appointments for today.</p>
+          </div>
+          <% } else { %>
+          <div class="overflow-hidden rounded-lg border border-gray-200">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Patient
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contact
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Appointment
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Service
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <% appointment.forEach(appointment => { %>
+                <tr class="appointment-row transition-all duration-150">
+                  <!-- Patient Info -->
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-indigo-600"></i>
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900"><%= appointment.user_fullname %></div>
+                      </div>
+                    </div>
+                  </td>
+                  
+                  <!-- Contact Info -->
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900"><%= appointment.user_email %></div>
+                    <div class="text-sm text-gray-500"><%= appointment.user_phone %></div>
+                  </td>
+                  
+                  <!-- Appointment Time -->
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">
+                      <%= new Date(appointment.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) %>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                      <i class="far fa-clock mr-1 text-indigo-500"></i> <%= appointment.time %>
+                    </div>
+                  </td>
+                  
+                  <!-- Service -->
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs font-semibold leading-5 text-indigo-800 bg-indigo-100 rounded-full">
+                      <%= appointment.service %>
+                    </span>
+                  </td>
+                  
+                  <!-- Status -->
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <% if (appointment.status === "Accepted") { %>
+                      <span class="status-badge accepted-badge">
+                        <i class="fas fa-check-circle mr-1"></i> Accepted
+                      </span>
+                    <% } else { %>
+                      <span class="status-badge pending-badge">
+                        <i class="fas fa-hourglass-half mr-1"></i> Pending
+                      </span>
+                    <% } %>
+                  </td>
+                  
+                  <!-- Actions -->
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex space-x-3">
+                      <% if (appointment.status !== "Accepted") { %>
+                      <form action="/doctor/accept-appointment/<%= appointment.id %>" method="POST">
+                        <button type="submit" class="action-btn text-green-600 hover:text-green-800">
+                          <i class="fas fa-check-circle text-xl"></i>
+                        </button>
+                      </form>
+                      <% } %>
+                      
+                      <form action="/doctor/delete-appointment/<%= appointment.id %>" method="POST">
+                        <button type="submit" class="action-btn text-red-600 hover:text-red-800">
+                          <i class="fas fa-trash-alt text-xl"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    // Auto-hide flash message after 3 seconds
+    setTimeout(() => {
+      const flashMessage = document.getElementById('flash-message');
+      if (flashMessage) {
+        flashMessage.style.opacity = '0';
+        setTimeout(() => flashMessage.remove(), 300);
+      }
+    }, 3000);
+  </script>
+</body>
+</html>

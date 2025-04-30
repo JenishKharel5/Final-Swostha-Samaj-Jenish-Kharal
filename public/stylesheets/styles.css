@@ -1,0 +1,41 @@
+/* Global font styles */
+body {
+    font-family: 'Poppins', sans-serif; /* Change to your desired font family */
+    font-size: 16px; /* Base font size */
+    line-height: 1.5;
+    color: #333; /* Default text color */
+  }
+  
+  /* Heading styles */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Roboto', sans-serif; /* Optional: different font for headings */
+    font-weight: bold;
+    color: #111;
+  }
+  
+  /* Paragraph and text styles */
+  p, a {
+    font-size: 14px; /* Smaller text for links and paragraphs */
+    color: #555;
+  }
+  
+  /* Utility classes */
+  .text-lg {
+    font-size: 18px;
+  }
+  .text-xl {
+    font-size: 20px;
+  }
+  .font-bold {
+    font-weight: bold;
+  }
+  .font-light {
+    font-weight: 300;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+

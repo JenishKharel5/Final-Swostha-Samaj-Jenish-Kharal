@@ -1,0 +1,113 @@
+<%- include('./partials/header') %>
+
+<!-- Main Content for Edit Profile Page -->
+<div
+  class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="max-w-md w-full space-y-8">
+    <div class="bg-white/70 backdrop-blur-lg shadow-lg rounded-2xl p-10">
+      <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+        Edit Profile
+      </h1>
+
+      <!-- Edit Profile Form -->
+      <form action="/users/edit-profile" method="POST" class="space-y-4">
+        <!-- Full Name -->
+        <div>
+          <label for="fullname" class="block text-sm font-medium text-gray-700"
+            >Full Name</label
+          >
+          <input
+            type="text"
+            name="fullname"
+            id="fullname"
+            value="<%= user.fullname %>"
+            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Email (Read-Only) -->
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700"
+            >Email Address</label
+          >
+          <input
+            type="email"
+            name="email"
+            id="email"
+            value="<%= user.email %>"
+            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-200 cursor-not-allowed shadow-sm focus:outline-none"
+            readonly
+          />
+        </div>
+
+        <!-- Phone Number -->
+        <div>
+          <label for="phone" class="block text-sm font-medium text-gray-700"
+            >Phone Number</label
+          >
+          <div class="flex items-center">
+            <span
+              class="px-3 py-2 bg-gray-200 border border-gray-300 rounded-l-md"
+              >+977</span
+            >
+            <input
+              type="text"
+              name="phone"
+              id="phone"
+              value="<%= user.phone ? user.phone.replace('+977', '') : '' %>"
+              class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              maxlength="10"
+              pattern="\d{10}"
+              title="Phone number must be exactly 10 digits"
+              oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);"
+              required
+            />
+          </div>
+        </div>
+        <!-- Address -->
+        <div>
+          <label for="address" class="block text-sm font-medium text-gray-700"
+            >Address</label
+          >
+          <input
+            type="text"
+            name="address"
+            id="address"
+            value="<%= user.address %>"
+            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Age -->
+        <div>
+          <label for="age" class="block text-sm font-medium text-gray-700"
+            >Age</label
+          >
+          <input
+            type="number"
+            name="age"
+            id="age"
+            value="<%= user.age %>"
+            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Submit Button -->
+        <div>
+          <button
+            type="submit"
+            class="w-full py-3 px-4 text-lg font-semibold rounded-md text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-md hover:scale-105 transition-all duration-300 hover:shadow-lg"
+          >
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

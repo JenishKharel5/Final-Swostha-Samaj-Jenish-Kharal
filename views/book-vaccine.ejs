@@ -1,0 +1,42 @@
+<%- include('./partials/header') %>
+
+<!-- Main Content for Book Vaccine Page -->
+<div
+  class="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="max-w-md w-full space-y-8">
+    <div class="bg-white shadow-md rounded-lg p-6">
+      <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+        Book Vaccine
+      </h1>
+
+      <!-- Vaccine Details -->
+      <div class="bg-gray-50 shadow-inner rounded-lg p-6 mb-8">
+        <h2 class="text-xl font-bold text-gray-800"><%= vaccine.name %></h2>
+        <p class="text-sm text-gray-600 mt-2"><%= vaccine.description %></p>
+        <p class="text-sm text-gray-600 mt-2">
+          Available Slots: <%= vaccine.availableSlots %>
+        </p>
+        <p class="text-sm text-gray-600 mt-2">
+          Hospital: <%= vaccine.hospital %>
+        </p>
+      </div>
+
+      <!-- Booking Form -->
+      <form
+        action="/users/book-vaccine/<%= vaccine.id %>"
+        method="POST"
+        class="space-y-6"
+      >
+        <button
+          type="submit"
+          class="w-full bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 transition duration-200"
+        >
+          Confirm Booking
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

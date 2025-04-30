@@ -1,0 +1,54 @@
+<%- include('./partials/header') %>
+<% if (success.length > 0) { %>
+  <div id="flash-message" class="absolute top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-green-500 text-white">
+    <%= success %>
+  </div>
+<% } %>
+
+<!-- Main Content for OTP Verification Page -->
+<div
+  class="w-full h-screen flex items-center justify-center px-4 md:px-20 bg-gray-100"
+>
+  <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
+    <h4 class="text-3xl font-bold text-center mb-6 text-gray-700">
+      OTP Verification
+    </h4>
+
+    <!-- OTP Verification Form -->
+    <form action="/verify-otp" method="POST" class="space-y-4">
+      <!-- OTP Input -->
+      <div class="relative">
+        <input
+          type="text"
+          id="otp"
+          name="otp"
+          class="block bg-zinc-100 w-full px-4 py-3 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-200"
+          placeholder="Enter the OTP you received"
+          required
+        />
+      </div>
+
+      <!-- Submit Button -->
+      <div>
+        <button
+          type="submit"
+          class="w-full px-5 py-3 bg-blue-500 text-white rounded-full cursor-pointer transition duration-200 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-teal-500"
+        >
+          Verify OTP
+        </button>
+      </div>
+
+      <!-- Resend OTP Link -->
+      <div class="mt-4 text-center">
+        <p class="text-sm text-gray-600">
+          Didn't receive the OTP?
+          <a href="/resend-otp" class="text-blue-500 hover:underline"
+            >Resend OTP</a
+          >
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

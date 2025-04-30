@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Post</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+    }
+    
+    .content p {
+      margin-bottom: 1.5rem;
+      line-height: 1.7;
+      color: #334155;
+    }
+    
+    .content p:last-child {
+      margin-bottom: 0;
+    }
+    
+    .post-image {
+      transition: transform 0.3s ease;
+    }
+    
+    .post-image:hover {
+      transform: scale(1.02);
+    }
+    
+    .author-avatar {
+      transition: all 0.3s ease;
+    }
+    
+    .author-avatar:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+  </style>
+</head>
+<body>
+  <%- include('./partials/header') %>
+  
+  <div class="min-h-screen py-16 bg-gradient-to-b from-gray-50 to-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+      <!-- Page Heading -->
+      <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4"><%= blog.title %></h1>
+        <div class="w-24 h-1 bg-indigo-500 mx-auto"></div>
+      </div>
+
+      <!-- Blog Post Card -->
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+        <!-- Featured Image -->
+        <div class="overflow-hidden">
+          <img
+            class="w-full h-96 object-cover post-image"
+            src="/<%= blog.image %>"
+            alt="<%= blog.title %>"
+          />
+        </div>
+
+        <!-- Content -->
+        <div class="p-8 content">
+          <div class="prose max-w-none">
+            <p class="text-gray-700"><%= blog.content %></p>
+          </div>
+
+          <!-- Author Info -->
+          <div class="mt-12 pt-6 border-t border-gray-100 flex items-center space-x-4">
+            <img
+              src="<%= blog.author_avatar ? '/' + blog.author_avatar : 'https://cdn-icons-png.flaticon.com/512/64/64572.png' %>"
+              class="w-14 h-14 rounded-full author-avatar border-2 border-white shadow-md"
+              alt="Author avatar"
+            />
+            <div>
+              <p class="text-sm font-medium text-gray-900">Author: <%= blog.author.fullname || 'Anonymous' %></p>
+              <p class="text-sm text-gray-500">Posted at: <%= blog.createdAt.toDateString() %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('./partials/footer') %>
+</body>
+</html>

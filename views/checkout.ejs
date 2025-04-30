@@ -1,0 +1,204 @@
+<%- include('./partials/header') %>
+
+<!-- Main Content for Checkout Page -->
+<div
+  class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="max-w-3xl w-full space-y-8">
+    <div class="bg-white/70 backdrop-blur-lg shadow-lg rounded-2xl p-10">
+      <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+        Proceed to Checkout
+      </h1>
+
+      <!-- Order Summary -->
+      <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Order Summary</h2>
+        <div class="space-y-4">
+          <% items.forEach(cartItem => { %>
+          <div class="flex justify-between items-center border-b pb-4">
+            <div>
+              <h3 class="text-lg font-semibold">
+                <%= cartItem.product_name %>
+              </h3>
+              <p class="text-sm text-gray-600">
+                Quantity: <%= cartItem.quantity %>
+              </p>
+            </div>
+            <p class="text-lg font-semibold">
+              Rs. <%= (cartItem.product_price - cartItem.product_discount) *
+              cartItem.quantity %>
+            </p>
+          </div>
+          <% }) %>
+        </div>
+        <div class="flex justify-end items-center gap-2 mt-4">
+          <strong class="text-2xl">Grand Total:</strong>
+          <p class="text-xl font-semibold">
+            Rs. <%= items.reduce((sum, item) => sum + (item.product_price -
+            item.product_discount) * item.quantity, 0) %>
+          </p>
+        </div>
+      </div>
+
+      <!-- Payment Section -->
+      <div class="bg-white shadow-md rounded-lg p-6 text-center">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">
+          Payment with esewa
+        </h2>
+        <form
+          action="https://rc-epay.esewa.com.np/api/epay/main/v2/form"
+          method="POST"
+          class="flex justify-center"
+          onsubmit="generateSignature()"
+          target="_blank"
+        >
+          <input
+            type="text"
+            id="amount"
+            name="amount"
+            value="100"
+            required
+            hidden
+          />
+          <input
+            type="text"
+            id="tax_amount"
+            name="tax_amount"
+            value="10"
+            required
+            hidden
+          />
+          <input
+            type="text"
+            id="total_amount"
+            name="total_amount"
+            value="110"
+            required
+            hidden
+          />
+          <input
+            type="text"
+            id="transaction_uuid"
+            name="transaction_uuid"
+            value="241028"
+            required
+            hidden
+          />
+          <input
+            type="text"
+            id="product_code"
+            name="product_code"
+            value="EPAYTEST"
+            required
+            hidden
+          />
+          <input
+            type="text"
+            id="product_service_charge"
+            name="product_service_charge"
+            value="0"
+            required
+            hidden
+          />
+          <input
+            type="text"
+            id="product_delivery_charge"
+            name="product_delivery_charge"
+            value="0"
+            required
+            hidden
+          />
+          <input
+            type="text"
+            id="success_url"
+            name="success_url"
+            value="https://developer.esewa.com.np/success"
+            required
+            hidden
+          />
+          <input
+            type="text"
+            id="failure_url"
+            name="failure_url"
+            value="https://developer.esewa.com.np/failure"
+            required
+            hidden
+          />
+          <input
+            type="text"
+            id="signed_field_names"
+            name="signed_field_names"
+            value="total_amount,transaction_uuid,product_code"
+            required
+            hidden
+          />
+          <input
+            type="text"
+            id="signature"
+            name="signature"
+            value="i94zsd3oXF6ZsSr/kGqT4sSzYQzjj1W/waxjWyRwaME="
+            required
+            hidden
+          />
+          <input
+            value=" Pay with eSewa "
+            type="submit"
+            class="button"
+            style="
+              display: block !important;
+              background-color: #60bb46;
+              cursor: pointer;
+              color: #fff;
+              border: none;
+              padding: 5px 10px;
+            "
+          />
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/hmac-sha256.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/enc-base64.min.js"></script>
+
+<script>
+  function generateSignature() {
+    // Generate transaction UUID
+    var currentTime = new Date();
+    var formattedTime =
+      currentTime.toISOString().slice(2, 10).replace(/-/g, "") +
+      "-" +
+      currentTime.getHours() +
+      currentTime.getMinutes() +
+      currentTime.getSeconds();
+    document.getElementById("transaction_uuid").value = formattedTime;
+
+    // Retrieve payment details
+    var total_amount = document.getElementById("total_amount").value;
+    var transaction_uuid = document.getElementById("transaction_uuid").value;
+    var product_code = document.getElementById("product_code").value;
+    var secret = "8gBm/:&EnhH.1/q"; // Replace with your actual secret key
+
+    // Generate signature
+    var hash = CryptoJS.HmacSHA256(
+      `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`,
+      secret
+    );
+    var hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
+    document.getElementById("signature").value = hashInBase64;
+  }
+  // Call generateSignature() when input fields are changed
+  document
+    .getElementById("total_amount")
+    .addEventListener("input", generateSignature);
+  document
+    .getElementById("transaction_uuid")
+    .addEventListener("input", generateSignature);
+  document
+    .getElementById("product_code")
+    .addEventListener("input", generateSignature);
+</script>

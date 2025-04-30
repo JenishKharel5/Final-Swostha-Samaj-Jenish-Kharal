@@ -1,0 +1,54 @@
+<%- include('./partials/header') %>
+
+<div class="min-h-screen bg-gray-100 flex">
+  <!-- Sidebar -->
+  <div class="w-1/4 bg-white shadow-lg border-r border-gray-200">
+    <div class="p-4 border-b border-gray-200">
+      <h1 class="text-xl font-bold text-gray-800">Chats</h1>
+    </div>
+    <div class="overflow-y-auto" style="height: calc(100vh - 80px)">
+      <% if (admins.length === 0) { %>
+        <p class="p-4 text-gray-600">No admins available at the moment.</p>
+      <% } else { %>
+        <% admins.forEach(admin => { %>
+          <a href="/chat/<%= admin.id %>" class="block p-4 border-b border-gray-200 hover:bg-gray-50 transition duration-200">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
+                <span class="text-white font-semibold">
+                  <%= admin.fullname.charAt(0).toUpperCase() %>
+                </span>
+              </div>
+              <div class="flex-1">
+                <div class="flex justify-between">
+                  <span class="font-semibold text-gray-800"><%= admin.fullname %> (<%= admin.role %>)</span>
+                  <span class="text-sm text-gray-500">
+                    <%= admin.lastLogin ? new Date(admin.lastLogin).toLocaleString() : 'N/A' %>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </a>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="w-3/4 flex items-center justify-center">
+    <div class="text-center">
+      <h2 class="text-2xl font-semibold text-gray-700">Select an admin to start chatting</h2>
+      <p class="text-gray-500 mt-2">Choose an admin from the list to begin your conversation.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('a[href^="/chat/"]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      console.log('Clicked admin link:', link.href);
+      window.location.href = link.href; // Force navigation
+    });
+  });
+</script>
+
+<%- include('./partials/footer') %>
