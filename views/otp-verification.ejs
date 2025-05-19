@@ -1,54 +1,182 @@
 <%- include('./partials/header') %>
-<% if (success.length > 0) { %>
-  <div id="flash-message" class="absolute top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-green-500 text-white">
-    <%= success %>
+
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+
+  .animate-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+
+  .otp-input {
+    letter-spacing: 0.5em;
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: 600;
+  }
+
+  .timer-warning {
+    color: #ef4444;
+    font-weight: 600;
+  }
+
+  .flash-message {
+    animation: fadeIn 0.3s ease-out forwards;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+</style>
+
+<% if (error.length > 0) { %>
+  <div id="flash-message" class="fixed top-5 left-1/2 -translate-x-1/2 p-4 rounded-lg bg-red-500 text-white shadow-lg z-50 flex items-center space-x-2">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <span><%= error %></span>
   </div>
 <% } %>
 
-<!-- Main Content for OTP Verification Page -->
-<div
-  class="w-full h-screen flex items-center justify-center px-4 md:px-20 bg-gray-100"
->
-  <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-    <h4 class="text-3xl font-bold text-center mb-6 text-gray-700">
-      OTP Verification
-    </h4>
+<% if (success.length > 0) { %>
+  <div id="flash-message" class="fixed top-5 left-1/2 -translate-x-1/2 p-4 rounded-lg bg-green-500 text-white shadow-lg z-50 flex items-center space-x-2">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span><%= success %></span>
+  </div>
+<% } %>
 
-    <!-- OTP Verification Form -->
-    <form action="/verify-otp" method="POST" class="space-y-4">
-      <!-- OTP Input -->
+<div class="w-full min-h-screen flex items-center justify-center px-4 md:px-20 bg-gradient-to-br from-blue-50 to-blue-100">
+  <div class="w-full max-w-md bg-white/80 backdrop-blur-lg p-8 rounded-2xl shadow-xl">
+    <div class="text-center mb-8">
+      <h4 class="text-3xl font-bold text-gray-800 mb-2">
+        OTP Verification
+      </h4>
+      <p class="text-gray-600">
+        Please enter the 6-character OTP sent to your email address.
+      </p>
+    </div>
+
+    <form action="/verify-otp" method="POST" class="space-y-6" onsubmit="return validateOTP()">
       <div class="relative">
         <input
           type="text"
           id="otp"
           name="otp"
-          class="block bg-zinc-100 w-full px-4 py-3 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-200"
-          placeholder="Enter the OTP you received"
+          class="otp-input block bg-white/50 w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+          placeholder="Enter OTP"
+          pattern="[A-Za-z0-9]{6}"
+          maxlength="6"
           required
+          autocomplete="off"
         />
+        <p id="otpError" class="text-red-500 text-sm mt-2 hidden flex items-center">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Please enter a valid 6-character OTP (letters and numbers only)
+        </p>
       </div>
 
-      <!-- Submit Button -->
-      <div>
-        <button
-          type="submit"
-          class="w-full px-5 py-3 bg-blue-500 text-white rounded-full cursor-pointer transition duration-200 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-teal-500"
-        >
-          Verify OTP
-        </button>
+      <div class="text-center">
+        <div class="inline-flex items-center px-4 py-2 rounded-full bg-gray-100">
+          <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="text-sm text-gray-600">OTP expires in: <span id="timer" class="font-semibold">5:00</span></span>
+        </div>
       </div>
 
-      <!-- Resend OTP Link -->
-      <div class="mt-4 text-center">
+      <button
+        type="submit"
+        id="verifyButton"
+        class="w-full px-5 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      >
+        Verify OTP
+      </button>
+
+      <div class="text-center">
         <p class="text-sm text-gray-600">
           Didn't receive the OTP?
-          <a href="/resend-otp" class="text-blue-500 hover:underline"
-            >Resend OTP</a
-          >
+          <a href="/resend-otp" id="resendLink" class="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200">
+            Resend OTP
+          </a>
         </p>
       </div>
     </form>
   </div>
 </div>
+
+<script>
+  function validateOTP() {
+    const otp = document.getElementById('otp').value;
+    const otpError = document.getElementById('otpError');
+    const otpPattern = /^[A-Za-z0-9]{6}$/;
+    
+    if (!otpPattern.test(otp)) {
+      otpError.classList.remove('hidden');
+      otpError.classList.add('animate-shake');
+      setTimeout(() => otpError.classList.remove('animate-shake'), 500);
+      return false;
+    }
+    otpError.classList.add('hidden');
+    return true;
+  }
+
+  let timeLeft = 300;
+  const timerDisplay = document.getElementById('timer');
+  const resendLink = document.getElementById('resendLink');
+  const verifyButton = document.getElementById('verifyButton');
+
+  function updateTimer() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+    if (timeLeft <= 30) {
+      timerDisplay.classList.add('timer-warning');
+    }
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      timerDisplay.textContent = "Expired";
+      resendLink.classList.remove('text-gray-400', 'cursor-not-allowed');
+      resendLink.classList.add('text-blue-600', 'cursor-pointer');
+      verifyButton.disabled = true;
+      verifyButton.classList.add('opacity-50', 'cursor-not-allowed');
+    } else {
+      timeLeft--;
+    }
+  }
+
+  const timerInterval = setInterval(updateTimer, 1000);
+  updateTimer();
+
+  // Auto-hide flash messages after 5 seconds
+  setTimeout(() => {
+    const flashMessages = document.querySelectorAll('#flash-message');
+    flashMessages.forEach(message => {
+      message.style.opacity = '0';
+      message.style.transform = 'translateY(-10px)';
+      message.style.transition = 'all 0.3s ease-out';
+      setTimeout(() => message.remove(), 300);
+    });
+  }, 5000);
+
+  // Prevent form resubmission on refresh
+  if (window.history.replaceState) {
+    window.history.replaceState(null, null, window.location.href);
+  }
+</script>
 
 <%- include('./partials/footer') %>

@@ -3,7 +3,7 @@ const connection = require('./db');
 // Create a new contact message
 function createContact(contactData, callback) {
   const sql = `
-    INSERT INTO messages (name, email, message, createdAt)
+    INSERT INTO messages (name, email, message, created_at)
     VALUES (?, ?, ?, ?)
   `;
 

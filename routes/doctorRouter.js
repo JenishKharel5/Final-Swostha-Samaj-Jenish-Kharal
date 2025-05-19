@@ -4,6 +4,7 @@ const appointmentModel = require("../models/appointment-model");
 const checkRole = require("../middlewares/checkRole");
 const userModel = require("../models/user-model");
 const prescriptionModel = require("../models/prescription-model");
+const { sendAppointmentStatusEmail } = require("../utils/emailService");
 
 // Doctor Dashboard Route
 router.get("/doctor-dashboard", async (req, res) => {
@@ -66,6 +67,17 @@ router.post("/accept-appointment/:id", async (req, res) => {
 
     await appointmentModel.updateAppointment(req.params.id, { status: "Accepted" });
     req.flash("success", "Appointment accepted successfully.");
+
+    // Fetch user details for email
+    const user = await userModel.getUserById(appointment.user_id);
+    // Send detailed email
+    sendAppointmentStatusEmail(
+      user.email,
+      "Accepted",
+      { ...appointment, user_fullname: user.fullname },
+      req.user.fullname
+    );
+
     // Redirect back to the appointments page
     res.redirect("/doctor/doctor-appointments");
   } catch (error) {
@@ -76,9 +88,25 @@ router.post("/accept-appointment/:id", async (req, res) => {
 
 router.post("/delete-appointment/:id", async (req, res) => {
   try {
-    const appointment = await appointmentModel.deleteAppointment(req.params.id);
+    // Fetch appointment before deleting for email
+    const appointment = await appointmentModel.getAppointmentById(req.params.id);
+    let user = null;
+    if (appointment) {
+      user = await userModel.getUserById(appointment.user_id);
+    }
+    const deleted = await appointmentModel.deleteAppointment(req.params.id);
     if (!appointment) {
       return res.status(404).send("Appointment not found.");
+    }
+
+    // Send detailed email if user exists
+    if (user) {
+      sendAppointmentStatusEmail(
+        user.email,
+        "Rejected",
+        { ...appointment, user_fullname: user.fullname },
+        req.user.fullname
+      );
     }
 
     // Redirect back to the appointments page

@@ -1,25 +1,20 @@
 const connection = require('./db');
 
 // Create a new vaccine
-function createVaccine(vaccine, callback) {
-  const sql = `
-    INSERT INTO vaccines (name, description, availableSlots, hospital, createdAt)
-    VALUES (?, ?, ?, ?, ?)
-  `;
-
-  const createdAt = vaccine.createdAt || new Date();
-
-  connection.query(
-    sql,
-    [vaccine.name, vaccine.description, vaccine.availableSlots, vaccine.hospital, createdAt],
-    callback
-  );
+function createVaccine(vaccine) {
+  return new Promise((resolve, reject) => {
+    const sql = `INSERT INTO vaccines (name, description, availableSlots, hospital, image) VALUES (?, ?, ?, ?, ?)`;
+    connection.query(sql, [vaccine.name, vaccine.description, vaccine.availableSlots, vaccine.hospital, vaccine.image], (err, result) => {
+      if (err) return reject(err);
+      resolve(result.insertId);
+    });
+  });
 }
 
 // Get vaccine by ID
 function getVaccineById(id) {
-  const sql = `SELECT * FROM vaccines WHERE id = ? LIMIT 1`;
   return new Promise((resolve, reject) => {
+    const sql = `SELECT * FROM vaccines WHERE id = ?`;
     connection.query(sql, [id], (err, results) => {
       if (err) return reject(err);
       if (results.length === 0) return resolve(null);

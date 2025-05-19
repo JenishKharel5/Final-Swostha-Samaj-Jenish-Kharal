@@ -27,17 +27,17 @@
     </div>
     <div class="bg-white/70 backdrop-blur-lg shadow-lg rounded-2xl p-10">
       <form action="/users/book-appointment" method="POST" class="space-y-6">
-        <!-- Date Input -->
+        <!-- Date Input with Calendar Card -->
         <div>
-          <label for="date" class="block text-sm font-semibold text-gray-800"
-            >Date</label
-          >
+          <label for="date" class="block text-sm font-semibold text-gray-800 mb-2">Select Date</label>
           <input
-            type="date"
+            type="text"
             id="date"
             name="date"
-            class="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-lg font-semibold"
+            placeholder="Pick a date"
             required
+            readonly
           />
         </div>
 
@@ -91,12 +91,66 @@
 </div>
 
 <%- include('./partials/footer') %>
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-  // Set the min attribute of the date input to today's date
+  // Set up flatpickr to only allow today and future dates
+  flatpickr("#date", {
+    dateFormat: "Y-m-d",
+    minDate: "today"
+  });
+
+  // Time filtering logic
   document.addEventListener("DOMContentLoaded", function () {
     const dateInput = document.getElementById("date");
-    const today = new Date().toISOString().split("T")[0];
-    dateInput.setAttribute("min", today);
+    const timeInput = document.getElementById("time");
+
+    // Helper: get all possible time slots (10:00 to 17:00, every 30 min)
+    function getTimeSlots() {
+      const slots = [];
+      let hour = 10;
+      let minute = 0;
+      while (hour < 17 || (hour === 17 && minute === 0)) {
+        slots.push(
+          `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`
+        );
+        minute += 30;
+        if (minute === 60) {
+          minute = 0;
+          hour++;
+        }
+      }
+      return slots;
+    }
+
+    // When date changes, fetch booked times and update time input
+    dateInput.addEventListener("change", function () {
+      const selectedDate = dateInput.value;
+      if (!selectedDate) return;
+      fetch(`/users/booked-times?date=${selectedDate}`)
+        .then((res) => res.json())
+        .then((bookedTimes) => {
+          // Remove previous datalist if any
+          let datalist = document.getElementById("time-options");
+          if (datalist) datalist.remove();
+
+          // Create new datalist
+          datalist = document.createElement("datalist");
+          datalist.id = "time-options";
+          const allSlots = getTimeSlots();
+          allSlots.forEach((slot) => {
+            if (!bookedTimes.includes(slot)) {
+              const option = document.createElement("option");
+              option.value = slot;
+              datalist.appendChild(option);
+            }
+          });
+          document.body.appendChild(datalist);
+          timeInput.setAttribute("list", "time-options");
+        });
+    });
   });
 </script>
+

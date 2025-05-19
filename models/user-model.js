@@ -101,6 +101,19 @@ function updatePasswordByEmail(email, newHashedPassword, callback) {
   connection.query(sql, [newHashedPassword, email], callback);
 }
 
+function updateLastPasswordChange(email) {
+  return new Promise((resolve, reject) => {
+    const sql = `UPDATE users SET last_password_change = CURRENT_TIMESTAMP WHERE email = ?`;
+    connection.query(sql, [email], (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
 function findOneByEmailAndVerified(email) {
   return new Promise((resolve, reject) => {
     const sql = `SELECT * FROM users WHERE email = ? AND isVerified = TRUE LIMIT 1`;
@@ -159,5 +172,6 @@ module.exports = {
   updateAvatar,
   countPatients,
   countPatientsWithAppointments,
-  getUsersByRole
+  getUsersByRole,
+  updateLastPasswordChange
 };

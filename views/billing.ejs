@@ -1,0 +1,44 @@
+<main class="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Billing History</h1>
+    <% if (billings && billings.length > 0) { %>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bill No</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Price</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <% billings.forEach(bill => { %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= bill.bill_no %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= bill.product_id %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= bill.quantity %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rs. <%= bill.unit_price %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rs. <%= bill.total_price %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rs. <%= bill.discount %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= bill.status %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= new Date(bill.created_at).toLocaleString() %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="text-center text-gray-500 py-12">
+        <i class="fas fa-file-invoice-dollar text-4xl mb-4 text-gray-300"></i>
+        <p class="text-lg">No billing records found.</p>
+      </div>
+    <% } %>
+  </div>
+</main>
+
+<a href="/users/billing-history" class="...">View Billing Records</a>

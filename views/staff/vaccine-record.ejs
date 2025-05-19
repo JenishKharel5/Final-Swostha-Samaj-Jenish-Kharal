@@ -13,9 +13,22 @@
 >
   <div class="max-w-7xl w-full space-y-8">
     <div class="bg-white shadow-md rounded-lg p-8">
-      <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
-        Program Records
-      </h1>
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800 text-center">
+          Program Records
+        </h1>
+        <div class="flex items-center gap-4">
+          <select id="programSelect" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Select Program</option>
+          </select>
+          <button onclick="generateReport()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd" />
+            </svg>
+            Generate Report
+          </button>
+        </div>
+      </div>
 
       <!-- Check if there are any appointments -->
       <% if (vaccines.length === 0) { %>
@@ -33,34 +46,347 @@
             />
             <div>
               <h2 class="text-2xl font-bold text-gray-800">
-                <%= vaccine.user_fullname %>
+                <%= vaccine.display_name %>
               </h2>
-              <p><%= vaccine.user_email %></p>
+              <p><%= vaccine.display_email %></p>
             </div>
           </div>
           <p class="text-gray-600 text-sm">
-            <strong>Phone:</strong> <%= vaccine.user_phone %>
+            <strong>Phone:</strong> <%= vaccine.display_phone %>
           </p>
+          <% if (vaccine.user_address) { %>
           <p class="text-gray-600 text-sm">
             <strong>Address:</strong> <%= vaccine.user_address %>
           </p>
+          <% } %>
+          <% if (vaccine.user_age) { %>
           <p class="text-gray-600 text-sm">
             <strong>Age:</strong> <%= vaccine.user_age %>
           </p>
+          <% } %>
+          <% if (vaccine.user_sex) { %>
           <p class="text-gray-600 text-sm">
             <strong>Sex:</strong> <%= vaccine.user_sex %>
           </p>
+          <% } %>
         </div>
         <div class="flex flex-col text-gray-800">
           <h3 class="text-xl font-semibold mb-2">Vaccine Details</h3>
           <p class="text-sm">Vaccine: <%= vaccine.vaccine_name %></p>
           <p class="text-sm">Hospital: <%= vaccine.vaccine_hospital %></p>
           <p class="text-sm">Ticket ID: <%= vaccine.ticketId %></p>
+          <form action="/staff/delete-vaccine-booking/<%= vaccine.id %>" method="POST" onsubmit="return confirm('Delete this booking?');">
+            <button type="submit" class="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition">Delete</button>
+          </form>
         </div>
       </div>
       <% }); %> <% } %>
     </div>
   </div>
 </div>
+
+<script>
+// Function to populate the program select dropdown
+async function populateProgramSelect() {
+  try {
+    const response = await fetch('/staff/get-all-vaccine-programs');
+    if (!response.ok) {
+      throw new Error('Failed to fetch programs');
+    }
+    
+    const data = await response.json();
+    const select = document.getElementById('programSelect');
+    
+    // Clear existing options except the first one
+    while (select.options.length > 1) {
+      select.remove(1);
+    }
+    
+    // Add program options
+    data.vaccines.forEach(vaccine => {
+      const option = document.createElement('option');
+      option.value = vaccine.id;
+      option.textContent = vaccine.name;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Error populating program select:', error);
+    alert('Error loading programs. Please try again.');
+  }
+}
+
+// Call populateProgramSelect when the page loads
+document.addEventListener('DOMContentLoaded', populateProgramSelect);
+
+async function generateReport() {
+  let loadingMsg = null;
+  try {
+    const selectedProgramId = document.getElementById('programSelect').value;
+    if (!selectedProgramId) {
+      alert('Please select a program first');
+      return;
+    }
+
+    // Show loading state
+    loadingMsg = document.createElement('div');
+    loadingMsg.className = 'fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-50';
+    loadingMsg.innerHTML = `
+      <div class="bg-white p-4 rounded-lg shadow-lg">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+        <p class="mt-2 text-gray-700">Generating report...</p>
+      </div>
+    `;
+    document.body.appendChild(loadingMsg);
+
+    // Fetch all programs and bookings
+    const response = await fetch('/staff/get-all-vaccine-programs');
+    if (!response.ok) {
+      throw new Error('Failed to fetch data');
+    }
+    
+    const data = await response.json();
+    
+    // Find the selected program
+    const selectedProgram = data.vaccines.find(v => v.id === parseInt(selectedProgramId));
+    if (!selectedProgram) {
+      throw new Error('Selected program not found');
+    }
+    
+    // Filter bookings for the selected program
+    const filteredBookings = Array.isArray(data.bookings) ? data.bookings.filter(booking => {
+      return parseInt(booking.vaccine_id) === parseInt(selectedProgramId);
+    }) : [];
+    
+    if (filteredBookings.length === 0) {
+      throw new Error('No bookings found for the selected program');
+    }
+
+    // Create report window
+    const reportWindow = window.open('', '_blank', 'width=1200,height=800');
+    if (!reportWindow) {
+      throw new Error('Popup blocked. Please allow popups for this site.');
+    }
+    
+    // Generate report content
+    const reportContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Program Records Report</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <style>
+          body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px;
+            background-color: #f8f9fa;
+          }
+          .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          .header { 
+            text-align: center; 
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+          }
+          .header h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+          }
+          .summary { 
+            margin-bottom: 30px; 
+            padding: 20px; 
+            background: #f8f9fa; 
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+          }
+          .summary h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+          }
+          .table-container {
+            margin-bottom: 30px;
+            overflow-x: auto;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+          }
+          th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+          }
+          th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2d3748;
+          }
+          tr:hover {
+            background-color: #f8f9fa;
+          }
+          .patient-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+          }
+          .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+            background-color: #c6f6d5;
+            color: #2f855a;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #718096;
+            font-size: 0.9em;
+          }
+          .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+          }
+          .print-button:hover {
+            background-color: #3182ce;
+          }
+          @media print {
+            body {
+              background: white;
+              margin: 0;
+              padding: 0;
+            }
+            .container {
+              box-shadow: none;
+              padding: 0;
+              margin: 0;
+            }
+            .header, .summary {
+              border-color: #ddd;
+            }
+            .print-button {
+              display: none;
+            }
+            table {
+              page-break-inside: auto;
+            }
+            tr {
+              page-break-inside: avoid;
+              page-break-after: auto;
+            }
+            thead {
+              display: table-header-group;
+            }
+            tfoot {
+              display: table-footer-group;
+            }
+            @page {
+              margin: 2cm;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <button onclick="window.print()" class="print-button">
+          <i class="fas fa-print"></i>
+          Print Report
+        </button>
+        <div class="container">
+          <div class="header">
+            <h1>Program Records Report</h1>
+            <p>Generated on: ${new Date().toLocaleString()}</p>
+          </div>
+          
+          <div class="summary">
+            <h3>Program Summary</h3>
+            <p><strong>Program Name:</strong> ${selectedProgram.name}</p>
+            <p><strong>Hospital:</strong> ${selectedProgram.hospital}</p>
+            <p><strong>Total Participants:</strong> ${filteredBookings.length}</p>
+            <p><strong>Available Slots:</strong> ${selectedProgram.availableSlots}</p>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Participant Information</th>
+                  <th>Contact Information</th>
+                  <th>Booking Details</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filteredBookings.map((booking, index) => {
+                  return `
+                    <tr>
+                      <td>
+                        <div class="patient-info">
+                          <div><strong>${booking.display_name || 'N/A'}</strong></div>
+                          ${booking.user_age ? `<div>Age: ${booking.user_age}, ${booking.user_sex || 'N/A'}</div>` : ''}
+                        </div>
+                      </td>
+                      <td>
+                        <div><i class="fas fa-envelope"></i> ${booking.display_email || 'N/A'}</div>
+                        <div><i class="fas fa-phone"></i> ${booking.display_phone || 'N/A'}</div>
+                        ${booking.user_address ? `<div><i class="fas fa-map-marker-alt"></i> ${booking.user_address}</div>` : ''}
+                      </td>
+                      <td>
+                        <div><i class="fas fa-ticket-alt"></i> ${booking.ticketId || 'N/A'}</div>
+                        <div><i class="far fa-calendar"></i> ${new Date(booking.bookingDate).toLocaleDateString()}</div>
+                      </td>
+                      <td>
+                        <span class="status-badge">${booking.status}</span>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="footer">
+            <p>This report was generated by the Swostha Samaj Healthcare System</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    reportWindow.document.write(reportContent);
+    reportWindow.document.close();
+
+  } catch (error) {
+    console.error('Error generating report:', error);
+    alert('Error generating report: ' + error.message);
+  } finally {
+    // Always remove loading state
+    if (loadingMsg && loadingMsg.parentNode) {
+      loadingMsg.parentNode.removeChild(loadingMsg);
+    }
+  }
+}
+</script>
 
 <%- include('../partials/footer') %>

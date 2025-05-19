@@ -4,15 +4,16 @@ const connection = require('./db');
 function createBlog(blog) {
   return new Promise((resolve, reject) => {
     const sql = `
-      INSERT INTO blogs (title, image, content, author_id, createdAt)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO blogs (title, image, content, author_id, createdAt, status)
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
 
     const createdAt = blog.createdAt || new Date();
+    const status = 'pending'; // Default status for new blogs
 
     connection.query(
       sql,
-      [blog.title, blog.image, blog.content, blog.author_id, createdAt],
+      [blog.title, blog.image, blog.content, blog.author_id, createdAt, status],
       (err, result) => {
         if (err) return reject(err);
         resolve(result);
@@ -25,7 +26,7 @@ function createBlog(blog) {
 function getBlogById(id) {
   return new Promise((resolve, reject) => {
     const sql = `
-      SELECT b.id, b.title, b.image, b.content, b.createdAt,
+      SELECT b.id, b.title, b.image, b.content, b.createdAt, b.status,
              u.id AS author_id, u.fullname AS author_name, u.email AS author_email, u.avatar AS author_avatar
       FROM blogs b
       JOIN users u ON b.author_id = u.id
@@ -86,7 +87,7 @@ function deleteBlog(id, callback) {
 function getAllBlogsWithAuthors() {
   return new Promise((resolve, reject) => {
     const sql = `
-        SELECT b.id, b.title, b.image, b.content, b.createdAt,
+        SELECT b.id, b.title, b.image, b.content, b.createdAt, b.status,
                u.id AS author_id, u.fullname AS author_name, u.email AS author_email
         FROM blogs b
         JOIN users u ON b.author_id = u.id
@@ -99,6 +100,34 @@ function getAllBlogsWithAuthors() {
   });
 }
 
+// Get pending blogs for staff review
+function getPendingBlogs() {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT b.id, b.title, b.image, b.content, b.createdAt, b.status,
+             u.id AS author_id, u.fullname AS author_name, u.email AS author_email
+      FROM blogs b
+      JOIN users u ON b.author_id = u.id
+      WHERE b.status = 'pending'
+      ORDER BY b.createdAt DESC
+    `;
+    connection.query(sql, (err, results) => {
+      if (err) return reject(err);
+      resolve(results);
+    });
+  });
+}
+
+// Update blog status (approve/reject)
+function updateBlogStatus(id, status) {
+  return new Promise((resolve, reject) => {
+    const sql = `UPDATE blogs SET status = ? WHERE id = ?`;
+    connection.query(sql, [status, id], (err, result) => {
+      if (err) return reject(err);
+      resolve(result);
+    });
+  });
+}
 
 module.exports = {
   createBlog,
@@ -107,4 +136,6 @@ module.exports = {
   updateBlog,
   deleteBlog,
   getAllBlogsWithAuthors,
+  getPendingBlogs,
+  updateBlogStatus
 };

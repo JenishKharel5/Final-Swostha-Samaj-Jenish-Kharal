@@ -24,12 +24,15 @@ const io = new Server(server, {
   },
 });
 
+// Basic middleware setup
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "Uploads")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.set("view engine", "ejs");
+
+// Session and flash setup
 app.use(
   session({
     secret: process.env.EXPRESS_SESSION_SECRET,
@@ -38,13 +41,80 @@ app.use(
     cookie: { secure: false },
   })
 );
-app.use(authMiddleware);
+app.use(flash());
 
+// Authentication middleware
 app.use(async (req, res, next) => {
-  res.locals.username = req.user ? req.user.fullname : "";
-  if (req.user) {
+  try {
+    // Check for token in cookies
+    const token = req.cookies.token;
+
+    if (token) {
+      try {
+        // Verify token
+        const decoded = jwt.verify(token, process.env.JWT_KEY);
+        
+        // Get user from database
+        const user = await userModel.getUserByEmail(decoded.email);
+        
+        if (user) {
+          // Set user in session and request
+          req.session.user = user;
+          req.user = user;
+          
+          // Set user data in res.locals
+          res.locals.loggedin = true;
+          res.locals.fullname = user.fullname;
+          res.locals.avatar = user.avatar || null;
+          res.locals.role = user.role;
+          res.locals.user = user;
+        } else {
+          // Clear invalid token
+          res.clearCookie('token');
+          clearUserData(req, res);
+        }
+      } catch (err) {
+        console.error('Token verification failed:', err);
+        res.clearCookie('token');
+        clearUserData(req, res);
+      }
+    } else if (req.session && req.session.user) {
+      // Use session data if available
+      const user = req.session.user;
+      req.user = user;
+      
+      // Set user data in res.locals
+      res.locals.loggedin = true;
+      res.locals.fullname = user.fullname;
+      res.locals.avatar = user.avatar || null;
+      res.locals.role = user.role;
+      res.locals.user = user;
+    } else {
+      clearUserData(req, res);
+    }
+    next();
+  } catch (error) {
+    console.error('Error in auth middleware:', error);
+    clearUserData(req, res);
+    next();
+  }
+});
+
+// Helper function to clear user data
+function clearUserData(req, res) {
+  req.user = null;
+  res.locals.loggedin = false;
+  res.locals.fullname = '';
+  res.locals.avatar = null;
+  res.locals.role = '';
+  res.locals.user = null;
+}
+
+// User data middleware
+app.use(async (req, res, next) => {
+  if (res.locals.loggedin && res.locals.user) {
     try {
-      const appointments = await appointmentModel.getAppointmentByUserId(req.user.id);
+      const appointments = await appointmentModel.getAppointmentByUserId(res.locals.user.id);
       res.locals.hasAcceptedAppointment = appointments.some(
         (appointment) => appointment.status === "Accepted"
       );
@@ -58,14 +128,10 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Log res.locals before rendering
+// Make flash messages available to all views
 app.use((req, res, next) => {
-  console.log("app.js - res.locals before rendering:", {
-    loggedin: res.locals.loggedin,
-    fullname: res.locals.fullname,
-    avatar: res.locals.avatar,
-    role: res.locals.role,
-  });
+  res.locals.success_msg = req.flash('success');
+  res.locals.error_msg = req.flash('error');
   next();
 });
 
@@ -190,8 +256,9 @@ const staffRouter = require("./routes/staffRouter");
 const indexRouter = require("./routes/index");
 const doctorRouter = require("./routes/doctorRouter");
 const chatRouter = require("./routes/chatRouter");
+const messageRouter = require("./routes/messageRouter");
+const staffBlogRouter = require("./routes/staffBlogRouter");
 
-app.use(flash());
 app.use("/", indexRouter);
 app.use("/owners", ownersRouter);
 app.use("/users", usersRouter);
@@ -199,6 +266,19 @@ app.use("/products", ProductsRouter);
 app.use("/doctor", doctorRouter);
 app.use("/staff", staffRouter);
 app.use("/chat", chatRouter);
+app.use("/message", messageRouter);
+app.use("/staff", staffBlogRouter);
+
+// Debug middleware for res.locals - moved to the end
+app.use((req, res, next) => {
+  console.log("app.js - res.locals before rendering:", {
+    loggedin: res.locals.loggedin,
+    fullname: res.locals.fullname,
+    avatar: res.locals.avatar,
+    role: res.locals.role,
+  });
+  next();
+});
 
 server.listen(3000, () => {
   console.log("Server running on port 3000");

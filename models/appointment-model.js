@@ -47,22 +47,24 @@ function getAllAppointments(limit = 100, offset = 0) {
 }
 
 function getAllVerifiedAppointments(limit = 100, offset = 0) {
-  return new Promise((resolve, reject) => {
-    const sql = `
-      SELECT a.*, u.fullname AS user_fullname, u.email AS user_email, u.phone AS user_phone, u.avatar AS user_avatar, u.age AS user_age, u.sex AS user_sex, u.address AS user_address, u.lastLogin AS user_last_login
-      FROM appointments a
-      JOIN users u ON a.user_id = u.id
-      WHERE a.status = 'Accepted'
-      ORDER BY a.date DESC, a.time DESC
-      LIMIT ?
-      OFFSET ?
-    `;
-
-    connection.query(sql, [limit, offset], (err, rows) => {
-      if (err) return reject(err);
-      resolve(rows);
-    });
-  });
+  const sql = `
+    SELECT a.*, 
+           u.fullname as user_fullname, 
+           u.email as user_email, 
+           u.phone as user_phone, 
+           u.address as user_address, 
+           u.age as user_age, 
+           u.sex as user_sex, 
+           u.avatar as user_avatar,
+           u.lastLogin as user_last_login,
+           u.id as user_id
+    FROM appointments a
+    JOIN users u ON a.user_id = u.id
+    WHERE a.status = 'Accepted'
+    ORDER BY a.date DESC, a.time DESC
+    LIMIT ? OFFSET ?
+  `;
+  return connection.promise().query(sql, [limit, offset]);
 }
 
 // Update appointment by ID (partial update)
@@ -149,10 +151,16 @@ function checkExistingAppointmentForSameServiceAtSameTime(userId, service, date,
 
 function checkAppointmentLimit(userId) {
   return new Promise((resolve, reject) => {
-    const sql = 'SELECT COUNT(*) AS count FROM appointments WHERE user_id = ?';
+    const sql = `
+      SELECT COUNT(*) AS count
+      FROM appointments
+      WHERE user_id = ?
+        AND status IN ('Pending', 'Accepted')
+        AND date >= CURDATE()
+    `;
     connection.query(sql, [userId], (err, result) => {
       if (err) return reject(err);
-      resolve(result[0].count >= 4);
+      resolve(result[0].count >= 3);
     });
   });
 }
@@ -195,6 +203,49 @@ function countPendingAppointments() {
   return connection.promise().query(sql, ['Pending']);
 }
 
+// Check if any appointment exists at the same date and time (for all users)
+function checkAnyAppointmentAtDateTime(date, time) {
+  return new Promise((resolve, reject) => {
+    const sql = `SELECT * FROM appointments WHERE date = ? AND time = ?`;
+    connection.query(sql, [date, time], (err, result) => {
+      if (err) return reject(err);
+      resolve(result.length > 0);
+    });
+  });
+}
+
+// Get paginated verified appointments
+async function getPaginatedVerifiedAppointments(limit, offset) {
+  const sql = `
+    SELECT a.*, 
+           u.fullname as user_fullname, 
+           u.email as user_email, 
+           u.phone as user_phone, 
+           u.address as user_address, 
+           u.age as user_age, 
+           u.sex as user_sex, 
+           u.avatar as user_avatar,
+           u.lastLogin as user_last_login,
+           u.id as user_id
+    FROM appointments a
+    JOIN users u ON a.user_id = u.id
+    WHERE a.status = 'Accepted'
+    ORDER BY a.date DESC, a.time DESC
+    LIMIT ? OFFSET ?
+  `;
+  return await connection.promise().query(sql, [limit, offset]);
+}
+
+// Count all verified appointments
+async function countAllVerifiedAppointments() {
+  const sql = `
+    SELECT COUNT(*) as count
+    FROM appointments
+    WHERE status = 'Accepted'
+  `;
+  return await connection.promise().query(sql);
+}
+
 module.exports = {
   createAppointment,
   getAppointmentById,
@@ -210,4 +261,7 @@ module.exports = {
   getTodaysAppointments,
   countPendingAppointments,
   getAllVerifiedAppointments,
+  checkAnyAppointmentAtDateTime,
+  getPaginatedVerifiedAppointments,
+  countAllVerifiedAppointments
 };

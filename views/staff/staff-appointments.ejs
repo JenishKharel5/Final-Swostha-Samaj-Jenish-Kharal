@@ -134,10 +134,23 @@
                   <span class="status-badge bg-yellow-100 text-yellow-800">
                     <i class="fas fa-hourglass-half mr-1"></i> Pending
                   </span>
-                  <% } else if (appointment.status === "Accepted") { %>
+                  <% } else if (appointment.status === "Accepted") { 
+                    // Calculate if the appointment is expired (date+time in the past)
+                    const now = new Date();
+                    const apptDate = new Date(appointment.date + 'T' + (appointment.time.split(' ')[0] || '00:00'));
+                    const isExpired = apptDate < now;
+                  %>
                   <span class="status-badge bg-green-100 text-green-800">
                     <i class="fas fa-check-circle mr-1"></i> Verified
                   </span>
+                  <% if (isExpired) { %>
+                  <form action="/staff/delete-appointment/<%= appointment.id %>" method="POST" style="display:inline" onsubmit="return confirm('Delete this appointment?');">
+                    <button type="submit" class="ml-2 text-red-500 hover:text-red-700" title="Delete appointment">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </form>
+                  <% } %>
+                  <!-- DEBUG: Status: <%= appointment.status %>, Date: <%= appointment.date %>, Time: <%= appointment.time %>, Expired: <%= isExpired %> -->
                   <% } %>
                 </td>
               </tr>

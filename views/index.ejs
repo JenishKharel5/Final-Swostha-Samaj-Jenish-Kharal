@@ -192,7 +192,7 @@
             <div class="container mx-auto max-w-6xl text-center">
                 <h1 class="text-5xl font-bold mb-6 leading-tight">Welcome to SwosthaSamaj</h1>
                 <p class="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-                    Your trusted partner for all medical needs. Premium quality products, competitive prices, and lightning-fast delivery.
+                    Your trusted partner for all medical needs. Premium quality products, competitive prices, and digital appointment booking.
                 </p>
                 <% if (user && user.role === 'user') { %>
                 <div class="flex justify-center space-x-4">
@@ -218,11 +218,16 @@
                     <h2 class="section-title text-4xl font-bold text-gray-800">Available Medicines</h2>
                     <p class="text-gray-600 mt-4">Browse our carefully curated selection of health products</p>
                 </div>
-                <% if (user && (user.role === 'staff')) { %>
-                <a href="/owners/admin" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 flex items-center cta-button">
-                    <i class="fas fa-plus mr-2"></i> Add Medicine
-                </a>
-                <% } %>
+                <div class="flex gap-4">
+                    <a href="/staff/medicines" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 flex items-center cta-button">
+                        <i class="fas fa-pills mr-2"></i> View Medicines
+                    </a>
+                    <% if (user && (user.role === 'staff')) { %>
+                    <a href="/owners/admin" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 flex items-center cta-button">
+                        <i class="fas fa-plus mr-2"></i> Add Medicine
+                    </a>
+                    <% } %>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">

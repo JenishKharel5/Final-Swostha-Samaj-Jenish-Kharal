@@ -9,13 +9,14 @@ const { generateToken } = require("../utils/generateToken");
 const { sendOTPEmail, generateOTP } = require("../utils/emailService");
 const otpGenerator = require("otp-generator");
 const nodemailer = require("nodemailer");
+const isLoggedIn = require("../middlewares/isLoggedIn");
 
 module.exports.registerUser = async (req, res) => {
   try {
     let { email, fullname, password, address, phone, age, sex } = req.body;
 
     // Check if user already exists
-    let user = await userModel.getUserByEmail({ email: email });
+    let user = await userModel.getUserByEmail(email);
     if (user) {
       req.flash("error", "You already have an account, please login.");
       return res.redirect("/register");
@@ -101,10 +102,32 @@ module.exports.loginUser = async (req, res) => {
 
 module.exports.logout = async (req, res) => {
   try {
-    res.cookie("token", ""); // Clear the token cookie
     req.flash("success", "User logged out successfully");
-    res.redirect("/login");
+    res.clearCookie("token");
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Error destroying session:", err);
+        req.flash("error", "Error during logout");
+      }
+      res.redirect("/login");
+    });
   } catch (err) {
-    res.send(err.message);
+    req.flash("error", "Error during logout");
+    res.redirect("/login");
   }
 };
+const checkChatAccess = async (req, res, next) => {
+  const user = req.user;
+  // Skip check for staff, doctors, and admins
+  if (["admin", "staff", "doctor"].includes(user.role)) {
+    return next();
+  }
+  // For regular users, check if they have an accepted appointment
+  // ...
+  console.log('checkChatAccess:', req.user && req.user.role);
+};
+
+// Only apply checkChatAccess for user chat access
+router.get("/chat", isLoggedIn, checkChatAccess, (req, res) => {
+});
+

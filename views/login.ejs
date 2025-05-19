@@ -11,6 +11,10 @@
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f8fafc;
+            background-image: url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
         
         .login-image {
@@ -23,6 +27,8 @@
         .form-container {
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
         }
         
         .form-container:hover {
@@ -47,26 +53,26 @@
 <body>
     <%- include('./partials/header') %>
     
-    <% if (error.length > 0) { %>
+    <% if (error_msg && error_msg.length > 0) { %>
     <div
         id="flash-message"
         class="fixed top-5 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-lg bg-red-500 text-white font-medium shadow-lg animate-fade-in"
     >
-        <%= error %>
+        <%= error_msg %>
     </div>
     <% } %> 
     
-    <% if (success.length > 0) { %>
+    <% if (success_msg && success_msg.length > 0) { %>
     <div
         id="flash-message"
         class="fixed top-5 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-lg bg-green-500 text-white font-medium shadow-lg animate-fade-in"
     >
-        <%= success %>
+        <%= success_msg %>
     </div>
     <% } %>
     
     <div class="w-full min-h-screen flex items-center justify-center px-4 py-12">
-        <div class="w-full max-w-6xl flex flex-col md:flex-row bg-white rounded-xl overflow-hidden shadow-xl">
+        <div class="w-full max-w-6xl flex flex-col md:flex-row bg-white rounded-xl overflow-hidden shadow-xl form-container">
             <!-- Image Section -->
             <div class="hidden md:block md:w-1/2 login-image"></div>
             
@@ -89,11 +95,14 @@
                                 placeholder="Enter your email"
                                 name="email"
                                 required
+                                minlength="5"
+                                maxlength="100"
+                                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
                             />
                         </div>
 
                         <!-- Password -->
-                        <div>
+                        <div class="relative">
                             <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                             <input
                                 id="password"
@@ -102,7 +111,15 @@
                                 placeholder="Enter your password"
                                 name="password"
                                 required
+                                minlength="8"
+                                maxlength="100"
                             />
+                            <span class="absolute inset-y-0 right-4 flex items-center cursor-pointer" onclick="togglePassword()">
+                                <svg id="togglePasswordIcon" class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </span>
                         </div>
 
                         <!-- Remember Me & Forgot Password -->
@@ -176,6 +193,24 @@
                 flashMessage.classList.add('opacity-0', 'transition-opacity', 'duration-500');
                 setTimeout(() => flashMessage.remove(), 500);
             }, 3000);
+        }
+
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const icon = document.getElementById('togglePasswordIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268-2.943 9.543-7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                `;
+            } else {
+                passwordInput.type = 'password';
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268-2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                `;
+            }
         }
     </script>
 </body>

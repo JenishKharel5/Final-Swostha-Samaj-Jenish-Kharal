@@ -1,0 +1,47 @@
+<%- include('../partials/header') %>
+
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-lg w-full bg-white/80 backdrop-blur-lg p-10 rounded-2xl shadow-xl">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8 text-center">Edit Program</h1>
+    <form action="/staff/edit-vaccine/<%= vaccine.id %>" method="POST" enctype="multipart/form-data" class="space-y-6">
+      <!-- Program Name -->
+      <div>
+        <label for="name" class="block text-sm font-semibold text-gray-800 mb-2">Program Name</label>
+        <input type="text" name="name" id="name" value="<%= vaccine.name %>" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <!-- Description -->
+      <div>
+        <label for="description" class="block text-sm font-semibold text-gray-800 mb-2">Description</label>
+        <textarea name="description" id="description" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"><%= vaccine.description %></textarea>
+      </div>
+      <!-- Available Slots -->
+      <div>
+        <label for="availableSlots" class="block text-sm font-semibold text-gray-800 mb-2">Available Slots</label>
+        <input type="number" name="availableSlots" id="availableSlots" value="<%= vaccine.availableSlots %>" min="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <!-- Hospital Name -->
+      <div>
+        <label for="hospital" class="block text-sm font-semibold text-gray-800 mb-2">Hospital Name</label>
+        <input type="text" name="hospital" id="hospital" value="<%= vaccine.hospital %>" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <!-- Image Upload -->
+      <div>
+        <label for="image" class="block text-sm font-semibold text-gray-800 mb-2">Program Photo</label>
+        <% if (vaccine.image) { %>
+          <div class="mb-2">
+            <img src="/<%= vaccine.image %>" alt="Current Program Photo" class="w-32 h-32 object-cover rounded-lg" />
+          </div>
+        <% } %>
+        <input type="file" name="image" id="image" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <p class="text-sm text-gray-500 mt-1">Leave empty to keep current image</p>
+      </div>
+      <!-- Submit Button -->
+      <div class="flex gap-4">
+        <button type="submit" class="flex-1 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition duration-300">Update Program</button>
+        <a href="/users/vaccines" class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition duration-300 text-center">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/footer') %> 

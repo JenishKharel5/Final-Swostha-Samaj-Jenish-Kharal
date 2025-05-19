@@ -1,66 +1,442 @@
-<%- include('../partials/header') %> <% if (success.length > 0) { %>
-<div
-  id="flash-message"
-  class="absolute top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-green-500 text-white"
->
-  <%= success %>
-</div>
-<% } %>
+<%- include('../partials/header') %>
 
-<!-- Main Content for Doctor Appointments Page -->
-<div
-  class="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
->
+<div class="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-7xl w-full space-y-8">
     <div class="bg-white shadow-md rounded-lg p-8">
-      <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
-        Patient Records
-      </h1>
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Patient Records</h1>
+        <div class="flex gap-2">
+          <button onclick="generateReport('today')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd" />
+            </svg>
+            Today's Report
+          </button>
+          <button onclick="generateReport('weekly')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd" />
+            </svg>
+            Weekly Report
+          </button>
+          <button onclick="generateReport('monthly')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd" />
+            </svg>
+            Monthly Report
+          </button>
+          <button onclick="generateReport('yearly')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd" />
+            </svg>
+            Yearly Report
+          </button>
+        </div>
+      </div>
+
+      <!-- Flash Messages -->
+      <% if (success) { %>
+        <div class="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
+          <%= success %>
+        </div>
+      <% } %>
 
       <!-- Check if there are any appointments -->
       <% if (appointments.length === 0) { %>
-      <p class="text-center text-gray-600 text-lg">No patients record.</p>
-      <% } else { %> <% appointments.forEach(appointment => { %>
-      <div
-        class="bg-white shadow-lg rounded-lg p-6 mb-4 grid grid-cols-2 gap-4 border border-gray-200"
-      >
-        <div class="space-y-4">
-          <div class="flex items-center gap-2">
-            <img
-              src="<%= appointment.user_avatar ? '/' + appointment.user_avatar : 'https://cdn-icons-png.flaticon.com/512/64/64572.png' %>"
-              alt="User Avatar"
-              class="h-10 w-10 rounded-full shadow-md"
-            />
-            <div>
-              <h2 class="text-2xl font-bold text-gray-800">
-                <%= appointment.user_fullname %>
-              </h2>
-              <p><%= appointment.user_email %></p>
+        <p class="text-center text-gray-600 text-lg">No patients record.</p>
+      <% } else { %>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <% appointments.forEach((appointment, index) => { %>
+            <div class="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
+              <div class="space-y-4">
+                <div class="flex items-center gap-2">
+                  <img
+                    src="<%= appointment.user_avatar ? '/' + appointment.user_avatar : '/images/default-avatar.png' %>"
+                    alt="User Avatar"
+                    class="h-10 w-10 rounded-full shadow-md"
+                  />
+                  <div>
+                    <h2 class="text-2xl font-bold text-gray-800">
+                      <%= appointment.user_fullname %>
+                    </h2>
+                    <p class="text-gray-600 text-sm">
+                      Age: <%= appointment.user_age %>, <%= appointment.user_sex %>
+                    </p>
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  <p class="text-gray-600 text-sm">
+                    <i class="fas fa-envelope mr-2"></i><%= appointment.user_email %>
+                  </p>
+                  <p class="text-gray-600 text-sm">
+                    <i class="fas fa-phone mr-2"></i><%= appointment.user_phone %>
+                  </p>
+                  <p class="text-gray-600 text-sm">
+                    <i class="fas fa-map-marker-alt mr-2"></i><%= appointment.user_address %>
+                  </p>
+                </div>
+                <div class="border-t border-gray-200 pt-4">
+                  <h3 class="text-lg font-semibold text-gray-800 mb-2">Appointment Details</h3>
+                  <p class="text-gray-600 text-sm">
+                    <i class="far fa-calendar mr-2"></i><%= new Date(appointment.date).toLocaleDateString() %>
+                  </p>
+                  <p class="text-gray-600 text-sm">
+                    <i class="far fa-clock mr-2"></i><%= appointment.time %>
+                  </p>
+                  <p class="text-gray-600 text-sm">
+                    <i class="fas fa-stethoscope mr-2"></i><%= appointment.service %>
+                  </p>
+                </div>
+                <div class="flex justify-between items-center pt-4">
+                  <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                    Accepted
+                  </span>
+                  <button 
+                    onclick="deleteAppointment('<%= appointment.id %>')"
+                    class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-          <p class="text-gray-600 text-sm">
-            <strong>Phone:</strong> <%= appointment.user_phone %>
-          </p>
-          <p class="text-gray-600 text-sm">
-            <strong>Address:</strong> <%= appointment.user_address %>
-          </p>
-          <p class="text-gray-600 text-sm">
-            <strong>Age:</strong> <%= appointment.user_age %>
-          </p>
-          <p class="text-gray-600 text-sm">
-            <strong>Sex:</strong> <%= appointment.user_sex %>
-          </p>
+          <% }); %>
         </div>
-        <div class="flex flex-col text-gray-800">
-          <h3 class="text-xl font-semibold mb-2">Appointment Details</h3>
-          <p class="text-sm">Date: <%= appointment.date %></p>
-          <p class="text-sm">Time: <%= appointment.time %></p>
-          <p class="text-sm">Service: <%= appointment.service %></p>
+
+        <!-- Pagination -->
+        <div class="flex justify-center mt-8">
+          <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            <% for(let i = 1; i <= totalPages; i++) { %>
+              <a
+                href="/staff/patient-record?page=<%= i %>"
+                class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 <%= currentPage === i ? 'z-10 bg-blue-50 border-blue-500 text-blue-600' : '' %>"
+              >
+                <%= i %>
+              </a>
+            <% } %>
+          </nav>
         </div>
-      </div>
-      <% }); %> <% } %>
+      <% } %>
     </div>
   </div>
 </div>
+
+<script>
+async function generateReport(period) {
+  let loadingMsg = null;
+  try {
+    // Show loading state
+    loadingMsg = document.createElement('div');
+    loadingMsg.className = 'fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-50';
+    loadingMsg.innerHTML = `
+      <div class="bg-white p-4 rounded-lg shadow-lg">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+        <p class="mt-2 text-gray-700">Generating report...</p>
+      </div>
+    `;
+    document.body.appendChild(loadingMsg);
+
+    // Fetch all appointments for the report
+    const response = await fetch('/staff/get-all-appointments');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch appointments');
+    }
+    
+    const data = await response.json();
+    
+    // Ensure appointments is an array and has data
+    if (!Array.isArray(data.bookings) || data.bookings.length === 0) {
+      throw new Error('No appointments found in the system');
+    }
+    
+    // Filter appointments based on period
+    let filteredAppointments = data.bookings;
+    const now = new Date();
+    
+    switch(period) {
+      case 'today':
+        filteredAppointments = data.bookings.filter(apt => {
+          const aptDate = new Date(apt.date);
+          return aptDate.toDateString() === now.toDateString();
+        });
+        break;
+      case 'weekly':
+        const weekAgo = new Date(now);
+        weekAgo.setDate(now.getDate() - 7);
+        filteredAppointments = data.bookings.filter(apt => {
+          const aptDate = new Date(apt.date);
+          return aptDate >= weekAgo;
+        });
+        break;
+      case 'monthly':
+        const monthAgo = new Date(now);
+        monthAgo.setMonth(now.getMonth() - 1);
+        filteredAppointments = data.bookings.filter(apt => {
+          const aptDate = new Date(apt.date);
+          return aptDate >= monthAgo;
+        });
+        break;
+      case 'yearly':
+        const yearAgo = new Date(now);
+        yearAgo.setFullYear(now.getFullYear() - 1);
+        filteredAppointments = data.bookings.filter(apt => {
+          const aptDate = new Date(apt.date);
+          return aptDate >= yearAgo;
+        });
+        break;
+    }
+
+    if (filteredAppointments.length === 0) {
+      throw new Error(`No appointments found for the selected period: ${period}`);
+    }
+
+    // Create report window
+    const reportWindow = window.open('', '_blank', 'width=1200,height=800');
+    if (!reportWindow) {
+      throw new Error('Popup blocked. Please allow popups for this site.');
+    }
+    
+    // Generate report content
+    const reportContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Patient Records Report</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <style>
+          body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px;
+            background-color: #f8f9fa;
+          }
+          .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          .header { 
+            text-align: center; 
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+          }
+          .header h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+          }
+          .summary { 
+            margin-bottom: 30px; 
+            padding: 20px; 
+            background: #f8f9fa; 
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+          }
+          .summary h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+          }
+          .table-container {
+            margin-bottom: 30px;
+            overflow-x: auto;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+          }
+          th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+          }
+          th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2d3748;
+          }
+          tr:hover {
+            background-color: #f8f9fa;
+          }
+          .patient-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+          }
+          .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+            background-color: #c6f6d5;
+            color: #2f855a;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #718096;
+            font-size: 0.9em;
+          }
+          .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+          }
+          .print-button:hover {
+            background-color: #3182ce;
+          }
+          @media print {
+            body {
+              background: white;
+              margin: 0;
+              padding: 0;
+            }
+            .container {
+              box-shadow: none;
+              padding: 0;
+              margin: 0;
+            }
+            .header, .summary {
+              border-color: #ddd;
+            }
+            .print-button {
+              display: none;
+            }
+            table {
+              page-break-inside: auto;
+            }
+            tr {
+              page-break-inside: avoid;
+              page-break-after: auto;
+            }
+            thead {
+              display: table-header-group;
+            }
+            tfoot {
+              display: table-footer-group;
+            }
+            @page {
+              margin: 2cm;
+            }
+          }
+          .icon-btn {
+            background: #fff;
+            border: none;
+            border-radius: 50%;
+            padding: 8px;
+            margin-left: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: background 0.2s;
+          }
+          .icon-btn:hover {
+            background: #f0f0f0;
+          }
+          .icon-btn.danger {
+            color: #e53e3e;
+          }
+        </style>
+      </head>
+      <body>
+        <button onclick="window.print()" class="print-button">
+          <i class="fas fa-print"></i>
+          Print Report
+        </button>
+        <div class="container">
+          <div class="header">
+            <h1>Patient Records Report</h1>
+            <p>Generated on: ${new Date().toLocaleString()}</p>
+          </div>
+          
+          <div class="summary">
+            <h3>Report Summary</h3>
+            <p><strong>Total Records:</strong> ${filteredAppointments.length}</p>
+            <p><strong>Period:</strong> ${period.charAt(0).toUpperCase() + period.slice(1)}</p>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Patient Information</th>
+                  <th>Contact Information</th>
+                  <th>Appointment Details</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filteredAppointments.map((appointment, index) => {
+                  return `
+                    <tr>
+                      <td>
+                        <div class="patient-info">
+                          <div><strong>${appointment.user_fullname || 'N/A'}</strong></div>
+                          <div>Age: ${appointment.user_age || 'N/A'}, ${appointment.user_sex || 'N/A'}</div>
+                        </div>
+                      </td>
+                      <td>
+                        <div><i class="fas fa-envelope"></i> ${appointment.user_email || 'N/A'}</div>
+                        <div><i class="fas fa-phone"></i> ${appointment.user_phone || 'N/A'}</div>
+                        <div><i class="fas fa-map-marker-alt"></i> ${appointment.user_address || 'N/A'}</div>
+                      </td>
+                      <td>
+                        <div><i class="far fa-calendar"></i> ${appointment.date ? new Date(appointment.date).toLocaleDateString() : 'N/A'}</div>
+                        <div><i class="far fa-clock"></i> ${appointment.time || 'N/A'}</div>
+                        <div><i class="fas fa-stethoscope"></i> ${appointment.service || 'N/A'}</div>
+                      </td>
+                      <td>
+                        <span class="status-badge">${appointment.status || 'Accepted'}</span>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="footer">
+            <p>This report was generated by the Swostha Samaj Healthcare System</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    reportWindow.document.write(reportContent);
+    reportWindow.document.close();
+
+  } catch (error) {
+    console.error('Error generating report:', error);
+    alert('Error generating report: ' + error.message);
+  } finally {
+    // Always remove loading state
+    if (loadingMsg && loadingMsg.parentNode) {
+      loadingMsg.parentNode.removeChild(loadingMsg);
+    }
+  }
+}
+
+function deleteAppointment(id) {
+  if (confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
+    window.location.href = `/staff/delete-appointment/${id}`;
+  }
+}
+</script>
 
 <%- include('../partials/footer') %>

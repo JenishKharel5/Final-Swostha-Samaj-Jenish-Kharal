@@ -1,14 +1,14 @@
-<% if (!loggedin) { %>
+<% if (!loggedin || !user || !user.id) { %>
   <!-- Signup & Login Buttons -->
   <a
     href="/register"
-    class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition-colors duration-200"
+    class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2 rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-indigo-700 transition-colors duration-200 mr-2"
   >Signup</a>
   <a
     href="/login"
-    class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition-colors duration-200"
+    class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2 rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-indigo-700 transition-colors duration-200"
   >Log In</a>
-<% } else { %>
+<% } else if (user) { %>
   <!-- User Dropdown -->
   <div class="flex items-center space-x-2 relative">
     <!-- Avatar Icon -->
@@ -26,7 +26,7 @@
     <div class="relative">
       <span
         id="dropdown-toggle"
-        class="text-blue-200 font-semibold cursor-pointer flex items-center hover:text-blue-100 transition-colors duration-200"
+        class="text-blue-800 font-semibold cursor-pointer flex items-center hover:text-blue-600 transition-colors duration-200"
       >
         Hey! <%= fullname || 'User' %>
         <!-- Dropdown Icon -->
@@ -56,19 +56,19 @@
           <li>
             <a
               href="/users/profile"
-              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+              class="block px-4 py-2 text-gray-700 hover:bg-blue-50"
             >My Profile</a>
           </li>
           <li>
             <a
               href="/users/change-password"
-              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+              class="block px-4 py-2 text-gray-700 hover:bg-blue-50"
             >Change Password</a>
           </li>
           <li>
             <a
               href="/users/logout"
-              class="block px-4 py-2 text-red-500 font-semibold hover:bg-gray-100"
+              class="block px-4 py-2 text-red-500 font-semibold hover:bg-blue-50"
             >Logout</a>
           </li>
         </ul>

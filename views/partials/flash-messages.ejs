@@ -1,0 +1,65 @@
+<% if (success_msg && success_msg.length > 0) { %>
+  <div class="fixed top-20 right-4 z-50 animate-fade-in-down">
+    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-lg" role="alert">
+      <div class="flex items-center">
+        <div class="py-1">
+          <svg class="h-6 w-6 text-green-500 mr-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <p class="font-bold">Success!</p>
+          <p class="text-sm"><%= success_msg %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+<% } %>
+
+<% if (error_msg && error_msg.length > 0) { %>
+  <div class="fixed top-20 right-4 z-50 animate-fade-in-down">
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg" role="alert">
+      <div class="flex items-center">
+        <div class="py-1">
+          <svg class="h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <p class="font-bold">Error!</p>
+          <p class="text-sm"><%= error_msg %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+<% } %>
+
+<style>
+  @keyframes fade-in-down {
+    0% {
+      opacity: 0;
+      transform: translateY(-1rem);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-in-down {
+    animation: fade-in-down 0.3s ease-out;
+  }
+</style>
+
+<script>
+  // Auto-hide flash messages after 5 seconds
+  document.addEventListener('DOMContentLoaded', function() {
+    const flashMessages = document.querySelectorAll('[role="alert"]');
+    flashMessages.forEach(message => {
+      setTimeout(() => {
+        message.style.opacity = '0';
+        message.style.transform = 'translateY(-1rem)';
+        setTimeout(() => message.remove(), 300);
+      }, 5000);
+    });
+  });
+</script> 

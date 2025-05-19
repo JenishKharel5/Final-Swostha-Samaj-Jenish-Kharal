@@ -68,6 +68,98 @@ class Message {
       callback(null, chats);
     });
   }
+
+  // Delete all messages in a room (conversation)
+  static deleteConversation(room, callback) {
+    const query = `DELETE FROM messages WHERE room = ?`;
+    db.query(query, [room], (err, result) => {
+      if (err) return callback(err);
+      callback(null, result);
+    });
+  }
+
+  // Delete a single message by ID
+  static deleteMessageById(messageId, senderId, callback) {
+    const query = `DELETE FROM messages WHERE id = ? AND sender_id = ?`;
+    db.query(query, [messageId, senderId], (err, result) => {
+      if (err) return callback(err);
+      callback(null, result);
+    });
+  }
+
+  // Contact form methods
+  static async createContact({ name, email, message }) {
+    return new Promise((resolve, reject) => {
+      const query = `
+        INSERT INTO contacts (name, email, message, created_at)
+        VALUES (?, ?, ?, NOW())
+      `;
+      db.query(query, [name, email, message], (err, result) => {
+        if (err) return reject(err);
+        resolve(result.insertId);
+      });
+    });
+  }
+
+  static async getContactById(id) {
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT * FROM contacts WHERE id = ?
+      `;
+      db.query(query, [id], (err, results) => {
+        if (err) return reject(err);
+        resolve(results[0]);
+      });
+    });
+  }
+
+  static async getAllContacts() {
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT * FROM contacts ORDER BY created_at DESC
+      `;
+      db.query(query, (err, results) => {
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
+  }
+
+  static async deleteContact(id) {
+    return new Promise((resolve, reject) => {
+      const query = `
+        DELETE FROM contacts WHERE id = ?
+      `;
+      db.query(query, [id], (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      });
+    });
+  }
+
+  static muteChat(staffId, userId, callback) {
+    const query = 'INSERT INTO muted_chats (staff_id, user_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE id=id';
+    db.query(query, [staffId, userId], (err, result) => {
+      if (err) return callback(err);
+      callback(null, result);
+    });
+  }
+
+  static unmuteChat(staffId, userId, callback) {
+    const query = 'DELETE FROM muted_chats WHERE staff_id = ? AND user_id = ?';
+    db.query(query, [staffId, userId], (err, result) => {
+      if (err) return callback(err);
+      callback(null, result);
+    });
+  }
+
+  static isChatMuted(staffId, userId, callback) {
+    const query = 'SELECT id FROM muted_chats WHERE staff_id = ? AND user_id = ?';
+    db.query(query, [staffId, userId], (err, results) => {
+      if (err) return callback(err);
+      callback(null, results.length > 0);
+    });
+  }
 }
 
 module.exports = Message;

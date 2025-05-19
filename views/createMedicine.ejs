@@ -63,12 +63,14 @@
           class="block w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-200 bg-white"
           placeholder="Enter medicine price"
           required
+          min="1"
+          step="0.01"
         />
       </div>
 
-      <!-- Medicine Quantity -->
+      <!-- Medicine Discount -->
       <div>
-        <label for="quantity" class="block text-sm font-medium text-gray-700"
+        <label for="discount" class="block text-sm font-medium text-gray-700"
           >Medicine Discount
         </label>
         <input
@@ -76,8 +78,10 @@
           id="discount"
           name="discount"
           class="block w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-200 bg-white"
-          placeholder="Enter medicine quantity"
+          placeholder="Enter medicine discount"
           required
+          min="0"
+          step="0.01"
         />
       </div>
 

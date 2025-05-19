@@ -22,6 +22,8 @@ const prescriptionModel = require("../models/prescription-model");
 const cartModel = require("../models/cart-model");
 const vaccineModel = require("../models/vaccine-model");
 const bookingModel = require("../models/booking-model");
+const { sendAppointmentStatusEmail } = require("../utils/emailService");
+const billingModel = require('../models/billing-model');
 
 router.post("/register", registerUser);
 
@@ -135,11 +137,38 @@ router.get("/change-password", isLoggedIn, async (req, res) => {
   let success = req.flash("success");
   res.render("change-password", { user: req.user, error, success });
 });
+
 //post change-password and replace it with previous one and also check if current password is correct
 router.post('/change-password', isLoggedIn, async (req, res) => {
   try {
-    const { currentPassword, newPassword } = req.body;
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
     const email = req.user.email;
+
+    // Validate new password
+    if (newPassword.length < 8) {
+      req.flash('error', 'New password must be at least 8 characters long.');
+      return res.redirect('/users/change-password');
+    }
+
+    // Check if new password contains at least one number and one letter
+    const hasNumber = /\d/.test(newPassword);
+    const hasLetter = /[a-zA-Z]/.test(newPassword);
+    if (!hasNumber || !hasLetter) {
+      req.flash('error', 'New password must contain at least one number and one letter.');
+      return res.redirect('/users/change-password');
+    }
+
+    // Check if passwords match
+    if (newPassword !== confirmNewPassword) {
+      req.flash('error', 'New passwords do not match.');
+      return res.redirect('/users/change-password');
+    }
+
+    // Check if new password is same as current password
+    if (currentPassword === newPassword) {
+      req.flash('error', 'New password must be different from current password.');
+      return res.redirect('/users/change-password');
+    }
 
     // 1. Get user by email
     const user = await userModel.getUserByEmail(email);
@@ -161,13 +190,23 @@ router.post('/change-password', isLoggedIn, async (req, res) => {
     // 4. Update password in DB
     await userModel.updatePasswordByEmail(email, hashedPassword);
 
-    req.flash('success', 'Password updated successfully!');
-    res.redirect('/users/change-password');
+    // 5. Update last password change timestamp
+    await userModel.updateLastPasswordChange(email);
+
+    req.flash('success', 'Password updated successfully! Please login again with your new password.');
+    
+    // Logout user after password change
+    req.logout((err) => {
+      if (err) {
+        console.error('Error logging out:', err);
+      }
+      res.redirect('/login');
+    });
 
   } catch (error) {
     console.error('Error changing password:', error);
     req.flash('error', 'Server error. Please try again.');
-    res.redirect('/change-password');
+    res.redirect('/users/change-password');
   }
 });
 
@@ -194,6 +233,15 @@ router.post("/book-appointment", async (req, res) => {
     const { date, time, service } = req.body;
     const formattedTime = convertTo12HourFormat(time);
 
+    // Check if any appointment exists at the same date and time (for all users)
+    const slotTaken = await appointmentModel.checkAnyAppointmentAtDateTime(date, formattedTime);
+    if (slotTaken) {
+      req.flash(
+        "error",
+        "This time slot is already booked. Please choose a different time."
+      );
+      return res.redirect("/users/appointment");
+    }
 
     // Check if the user already has an appointment for the same service at the same time
     const existingAppointment = await appointmentModel.checkExistingAppointmentForSameServiceAtSameTime(
@@ -211,9 +259,9 @@ router.post("/book-appointment", async (req, res) => {
       return res.redirect("/users/appointment");
     }
 
-    // Check if the user has already made 4 appointments
+    // Check if the user has already made 3 appointments
     if (await appointmentModel.checkAppointmentLimit(userId)) {
-      req.flash("error", "You can only make 4 appointments.");
+      req.flash("error", "You can only make 3 appointments.");
       return res.redirect("/users/appointment");
     }
 
@@ -236,17 +284,23 @@ router.post("/book-appointment", async (req, res) => {
 });
 
 //user dashboard
-router.get("/user-dashboard", async (req, res) => {
+router.get("/user-dashboard", isLoggedIn, async (req, res) => {
   try {
     // Fetch the logged-in user's data
-    const user = req.user; // Assuming req.user is populated by your authentication middleware
-
+    const user = req.user;
     // Fetch upcoming appointments for the user
     const appointments = await appointmentModel.getUpcomingAppointmentsByUserId(user.id || user._id);
+    let success = req.flash("success");
+    let error = req.flash("error");
+    // Fetch billing records for the user
+    const billings = await billingModel.getBillingsByUserId(user.id);
     // Render the dashboard with data
     res.render("user-dashboard", {
       user,
       appointments,
+      billings, // Pass billings to the view
+      success,
+      error
     });
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
@@ -274,7 +328,8 @@ router.post("/addtocart/:productId", isLoggedIn, async (req, res) => {
     }
 
     req.flash("success", "Item added to cart successfully!");
-    res.redirect("/");
+    const redirectUrl = req.body.redirect || "/";
+    res.redirect(redirectUrl);
   } catch (error) {
     console.error("Error adding to cart:", error);
     res.redirect("/users/cart");
@@ -302,7 +357,15 @@ router.get("/checkout", isLoggedIn, async (req, res) => {
     const userId = req.user.id;
     let [cartItems] = await cartModel.getCartItemsByUser(userId);
 
-    res.render("checkout", { success, items: cartItems, user: req.user });
+    // Calculate grand total
+    let grandTotal = 0;
+    if (cartItems && cartItems.length > 0) {
+      grandTotal = cartItems.reduce((sum, item) => {
+        return sum + (item.product_price - item.product_discount) * item.quantity;
+      }, 0);
+    }
+
+    res.render("checkout", { success, items: cartItems, user: req.user, grandTotal });
   } catch (error) {
     console.error("Error fetching cart items:", error);
     res.redirect("/");
@@ -337,57 +400,6 @@ router.post("/cart/updateQuantity/:itemId", async (req, res) => {
     console.error("Error updating quantity:", error);
     req.flash("error", "An error occurred while updating the quantity.");
     res.redirect("/users/cart");
-  }
-});
-
-// Checkout Page Route
-router.get("/checkout", isLoggedIn, async (req, res) => {
-  try {
-    // Find all cart items for the logged-in user
-    const cartItems = await cartModel
-      .find({ userId: req.user._id })
-      .populate("productId");
-
-    if (!cartItems.length) {
-      req.flash("error", "Your cart is empty!");
-      return res.redirect("/users/cart");
-    }
-
-    // Map cart items to include required details
-    const items = cartItems.map((cartItem) => {
-      const discount = cartItem.productId.discount || 0;
-      const price = cartItem.productId.price;
-      const discountedPrice = price - (price * discount) / 100;
-      return {
-        _id: cartItem._id,
-        name: cartItem.productId.name,
-        discount,
-        price,
-        discountedPrice,
-        quantity: cartItem.quantity,
-      };
-    });
-
-    // Calculate subtotal
-    const subtotal = items.reduce(
-      (total, cartItem) => total + cartItem.discountedPrice * cartItem.quantity,
-      0
-    );
-
-    // Example discount logic (replace with actual discount logic)
-    const discountApplied = false; // Change based on actual discount criteria
-    const totalPriceAfterDiscount = discountApplied ? subtotal * 0.9 : subtotal; // 10% discount if applied
-
-    res.render("checkout", {
-      items,
-      subtotal,
-      discountApplied,
-      totalPriceAfterDiscount,
-    });
-  } catch (error) {
-    console.error("Error fetching cart items:", error);
-    req.flash("error", "Error fetching cart items.");
-    res.redirect("/users/cart"); // Redirect back to the cart page in case of an error
   }
 });
 
@@ -441,10 +453,13 @@ router.get("/blog/:blogId", async (req, res) => {
 
 // GET route for add blog form
 router.get("/blog-add", isLoggedIn, async (req, res) => {
-
   try {
+    let success = req.flash("success");
+    let error = req.flash("error");
     res.render("add-blog", {
       user: req.user,
+      success,
+      error
     });
   } catch (error) {
     console.error("Error rendering add-blog page:", error);
@@ -485,8 +500,8 @@ router.get("/vaccines", async (req, res) => {
   try {
     const error = req.flash("error");
     const success = req.flash("success");
-    // Fetch all available vaccines
-    const [vaccines] = await vaccineModel.getAvailableVaccines();
+    // Fetch all vaccines, not just available ones
+    const [vaccines] = await vaccineModel.getAllVaccines();
 
     // Render the vaccines page
     res.render("vaccines", { user: req.user, vaccines, error, success });
@@ -500,7 +515,8 @@ router.get("/vaccines", async (req, res) => {
 router.get("/book-vaccine/:vaccineId", isLoggedIn, async (req, res) => {
   try {
     const vaccineId = req.params.vaccineId;
-
+    let success = req.flash("success");
+    let error = req.flash("error");
     // Fetch the vaccine details
     const vaccine = await vaccineModel.getVaccineById(vaccineId);
 
@@ -509,7 +525,7 @@ router.get("/book-vaccine/:vaccineId", isLoggedIn, async (req, res) => {
     }
 
     // Render the book vaccine page
-    res.render("book-vaccine", { user: req.user, vaccine });
+    res.render("book-vaccine", { user: req.user, vaccine, success, error });
   } catch (error) {
     console.error("Error fetching vaccine details:", error);
     res.status(500).send("Error loading page.");
@@ -520,49 +536,61 @@ router.get("/book-vaccine/:vaccineId", isLoggedIn, async (req, res) => {
 router.post("/book-vaccine/:vaccineId", async (req, res) => {
   try {
     const vaccineId = req.params.vaccineId;
-    const userId = req.user.id; // Assuming req.user contains the logged-in user's details
-
+    const userId = req.user.id;
 
     // Fetch the vaccine
     const vaccine = await vaccineModel.getVaccineById(vaccineId);
 
     if (!vaccine) {
-      return res.status(404).send("Vaccine not found.");
+      req.flash("error", "Vaccine not found.");
+      return res.redirect(`/users/book-vaccine/${vaccineId}`);
     }
 
     // Check if slots are available
     if (vaccine.availableSlots <= 0) {
-      return res.status(400).send("No slots available for this vaccine.");
+      req.flash("error", "No slots available for this program.");
+      return res.redirect(`/users/book-vaccine/${vaccineId}`);
     }
 
     // Check if the user already has a booking for this vaccine
     const existingBooking = await bookingModel.getBookingsByUserIdAndVaccineId(userId, vaccineId);
-
-    if (existingBooking) {
-      req.flash("error", "You already have a booking for this vaccine.");
-      return res.redirect("/users/vaccines");
+    if (existingBooking && existingBooking.length > 0) {
+      req.flash("error", "You already have a booking for this program.");
+      return res.redirect(`/users/book-vaccine/${vaccineId}`);
     }
 
     // Generate a unique ticket ID
     const ticketId = `TICKET-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    const newBooking = await bookingModel.createBooking({
+    await bookingModel.createBooking({
       user_id: userId,
       vaccine_id: vaccineId,
       ticketId,
     });
 
-    const bookingId = await bookingModel.getBookingByTicketId(ticketId);
-
     // Decrease the available slots for the vaccine
     vaccine.availableSlots -= 1;
     await vaccineModel.updateVaccine(vaccineId, { availableSlots: vaccine.availableSlots });
 
-    // Redirect to the ticket page
+    // Get the booking ID for the ticket page
+    const bookingId = await bookingModel.getBookingByTicketId(ticketId);
+
+    // Send confirmation email
+    const user = req.user;
+    sendAppointmentStatusEmail(
+      user.email,
+      "Booked",
+      { ...vaccine, ticketId, user_fullname: user.fullname },
+      null
+    );
+
+    // Redirect to the ticket page with a success message
+    req.flash("success", "Program booked successfully! Your ticket is below.");
     res.redirect(`/users/vaccine-ticket/${bookingId.id}`);
   } catch (error) {
     console.error("Error booking vaccine:", error);
-    res.status(500).send("Error booking vaccine.");
+    req.flash("error", "Error booking program. Please try again.");
+    res.redirect(`/users/book-vaccine/${req.params.vaccineId}`);
   }
 });
 
@@ -570,7 +598,8 @@ router.post("/book-vaccine/:vaccineId", async (req, res) => {
 router.get("/vaccine-ticket/:bookingId", async (req, res) => {
   try {
     const bookingId = req.params.bookingId;
-
+    let success = req.flash("success");
+    let error = req.flash("error");
     // Fetch the booking details and populate the vaccine and user details
     const booking = await bookingModel.getBookingById(bookingId);
 
@@ -579,10 +608,165 @@ router.get("/vaccine-ticket/:bookingId", async (req, res) => {
     }
 
     // Render the ticket page
-    res.render("vaccine-ticket", { user: req.user, booking });
+    res.render("vaccine-ticket", { user: req.user, booking, success, error });
   } catch (error) {
     console.error("Error fetching booking details:", error);
     res.status(500).send("Error loading ticket.");
+  }
+});
+
+// Get all booked times for a given date (for calendar filtering)
+router.get('/booked-times', async (req, res) => {
+  try {
+    const { date } = req.query;
+    if (!date) return res.status(400).json([]);
+    // Get all appointments for this date with status Pending or Accepted
+    const sql = `SELECT time FROM appointments WHERE date = ? AND status IN ('Pending', 'Accepted')`;
+    const connection = require('../models/db');
+    connection.query(sql, [date], (err, results) => {
+      if (err) return res.status(500).json([]);
+      // Extract only the time part (in HH:mm format)
+      const bookedTimes = results.map(row => {
+        // If time is stored as 'HH:mm AM/PM', convert to 24h 'HH:mm'
+        let t = row.time;
+        if (/AM|PM/i.test(t)) {
+          const [time, ampm] = t.split(' ');
+          let [h, m] = time.split(':').map(Number);
+          if (ampm.toUpperCase() === 'PM' && h !== 12) h += 12;
+          if (ampm.toUpperCase() === 'AM' && h === 12) h = 0;
+          return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        }
+        // If already in 24h format
+        return t.slice(0,5);
+      });
+      res.json(bookedTimes);
+    });
+  } catch (err) {
+    res.status(500).json([]);
+  }
+});
+
+// Guest booking for vaccine/program (no login required)
+router.post("/guest-book-vaccine/:vaccineId", async (req, res) => {
+  try {
+    const vaccineId = req.params.vaccineId;
+    const { fullname, email, phone } = req.body;
+
+    console.log('Guest booking attempt:', { vaccineId, fullname, email, phone });
+
+    // Validate required fields
+    if (!fullname || !email || !phone) {
+      console.log('Missing required fields:', { fullname, email, phone });
+      req.flash("error", "Please fill in all required fields.");
+      return res.redirect("/users/vaccines");
+    }
+
+    // Fetch the vaccine
+    const vaccine = await vaccineModel.getVaccineById(vaccineId);
+    if (!vaccine) {
+      console.log('Vaccine not found:', vaccineId);
+      req.flash("error", "Program not found.");
+      return res.redirect("/users/vaccines");
+    }
+
+    if (vaccine.availableSlots <= 0) {
+      console.log('No slots available for vaccine:', vaccineId);
+      req.flash("error", "No slots available for this program.");
+      return res.redirect("/users/vaccines");
+    }
+
+    // Store guest booking as Pending
+    const bookingObj = {
+      user_id: null, // Explicitly set to null for guest bookings
+      vaccine_id: vaccineId,
+      bookingDate: new Date(),
+      status: 'Pending',
+      ticketId: null,
+      guest_fullname: fullname,
+      guest_email: email,
+      guest_phone: phone
+    };
+
+    console.log('Creating guest booking:', bookingObj);
+
+    // Create the booking
+    const result = await bookingModel.createBooking(bookingObj);
+    
+    if (!result || !result.insertId) {
+      console.error('Failed to create booking:', result);
+      throw new Error('Failed to create booking');
+    }
+
+    console.log('Guest booking created successfully:', result);
+
+    // Send confirmation email to guest
+    try {
+      await sendAppointmentStatusEmail(
+        email,
+        'Pending',
+        {
+          name: vaccine.name,
+          hospital: vaccine.hospital,
+          user_fullname: fullname
+        },
+        'Staff' // Use 'Staff' as the default staff name for pending emails
+      );
+      console.log('Confirmation email sent to guest:', email);
+    } catch (emailError) {
+      console.error('Error sending confirmation email:', emailError);
+      // Don't throw error here, continue with success message
+    }
+
+    req.flash("success", "Your booking request has been submitted! Staff will review and you will receive an email once approved or rejected.");
+    res.redirect("/users/vaccines");
+  } catch (error) {
+    console.error("Error submitting guest booking:", error);
+    req.flash("error", "Error submitting booking request. Please try again.");
+    res.redirect("/users/vaccines");
+  }
+});
+
+router.get('/billing-history', isLoggedIn, async (req, res) => {
+  try {
+    const billings = await billingModel.getBillingsByUserId(req.user.id);
+    res.render('billing', { user: req.user, billings });
+  } catch (error) {
+    req.flash('error', 'Could not fetch billing history.');
+    res.redirect('/users/user-dashboard');
+  }
+});
+
+router.get('/esewa-success', isLoggedIn, async (req, res) => {
+  try {
+    console.log('eSewa success route hit');
+    const userId = req.user.id;
+    let [cartItems] = await cartModel.getCartItemsByUser(userId);
+    console.log('Cart items:', cartItems);
+
+    const billNo = 'BILL-' + Date.now();
+
+    for (const item of cartItems) {
+      console.log('Inserting billing for item:', item);
+      await billingModel.createBilling({
+        user_id: userId,
+        product_id: item.product_id,
+        bill_no: billNo,
+        quantity: item.quantity,
+        unit_price: item.product_price,
+        total_price: (item.product_price - item.product_discount) * item.quantity,
+        discount: item.product_discount,
+        status: 'Paid'
+      });
+    }
+
+    await cartModel.clearCart(userId);
+
+    req.flash('success', 'Payment successful! Your billing record has been updated.');
+    res.redirect('/users/billing-history');
+  } catch (error) {
+    console.error('Error saving billing record:', error);
+    req.flash('error', 'Payment succeeded, but failed to update billing record.');
+    res.redirect('/users/user-dashboard');
   }
 });
 

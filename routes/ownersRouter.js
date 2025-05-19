@@ -38,6 +38,16 @@ router.get("/admin", (req, res) => {
 //post medicine
 router.post("/createMedicine", upload.single("image"), async (req, res) => {
   let { name, price, description, discount } = req.body;
+  price = parseFloat(price);
+  discount = parseFloat(discount);
+  if (isNaN(price) || price <= 0) {
+    req.flash("error", "Price must be a positive number.");
+    return res.redirect("/owners/admin");
+  }
+  if (isNaN(discount) || discount < 0) {
+    req.flash("error", "Discount cannot be negative.");
+    return res.redirect("/owners/admin");
+  }
   const imagePath = req.file ? 'uploads/' + req.file.filename : null;
   await productModel.createProduct({
     image: imagePath,
@@ -87,8 +97,16 @@ router.get("/edit/:productId", async (req, res) => {
 router.post("/edit/:productId", upload.single("image"), async (req, res) => {
   try {
     let { name, price, description, discount } = req.body;
-    console.log(req.file);
-    console.log(req.params.productId);
+    price = parseFloat(price);
+    discount = parseFloat(discount);
+    if (isNaN(price) || price <= 0) {
+      req.flash("error", "Price must be a positive number.");
+      return res.redirect(`/owners/edit/${req.params.productId}`);
+    }
+    if (isNaN(discount) || discount < 0) {
+      req.flash("error", "Discount cannot be negative.");
+      return res.redirect(`/owners/edit/${req.params.productId}`);
+    }
     const imagePath =
       req.file
         ? req.file.path
@@ -125,6 +143,19 @@ router.get("/delete/:productId", async (req, res) => {
     console.error("Error deleting medicine:", error);
     req.flash("error", "Error deleting medicine.");
     res.redirect("/");
+  }
+});
+
+router.post("/delete/:productId", async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    await productModel.deleteProduct(productId);
+    req.flash("success", "Medicine deleted successfully!");
+    res.redirect("/all-medicines");
+  } catch (error) {
+    console.error("Error deleting medicine:", error);
+    req.flash("error", "Error deleting medicine.");
+    res.redirect("/all-medicines");
   }
 });
 

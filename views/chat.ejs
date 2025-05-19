@@ -1,208 +1,454 @@
-<%- include('./partials/header') %>
-
-<div class="min-h-screen bg-gray-100 flex flex-col">
-  <!-- Main Chat Layout -->
-  <div class="flex flex-1 overflow-hidden">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Application</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    .dot {
+      animation: dot-flashing 1s infinite linear alternate;
+      margin-left: 2px;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dot-flashing {
+      0% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.1); }
+      100% { opacity: 0.2; transform: scale(1); }
+    }
+    
+    #chat::-webkit-scrollbar {
+      width: 8px;
+      background: rgba(224, 231, 255, 0.5);
+      border-radius: 8px;
+    }
+    #chat::-webkit-scrollbar-thumb {
+      background: rgba(165, 180, 252, 0.7);
+      border-radius: 8px;
+    }
+    
+    .message-bubble {
+      position: relative;
+    }
+    
+    .message-bubble:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      width: 0;
+      height: 0;
+      border: 12px solid transparent;
+    }
+    
+    .sent:after {
+      right: -12px;
+      border-left-color: #6366f1;
+      border-right: 0;
+    }
+    
+    .received:after {
+      left: -12px;
+      border-right-color: white;
+      border-left: 0;
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, rgba(199, 210, 254, 0.8) 0%, rgba(165, 180, 252, 0.6) 50%, rgba(192, 132, 252, 0.4) 100%);
+    }
+    
+    .sidebar-gradient {
+      background: linear-gradient(180deg, #4f46e5 0%, #6366f1 100%);
+    }
+    
+    .message-input-glow:focus {
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+    }
+    
+    .send-button-glow:hover {
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+    }
+    
+    .chat-item-hover:hover {
+      transform: translateX(5px);
+      background: rgba(255, 255, 255, 0.15) !important;
+    }
+    
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+    }
+    
+    .typing-indicator {
+      background: linear-gradient(90deg, rgba(224, 231, 255, 0.8) 0%, rgba(199, 210, 254, 0.8) 100%);
+    }
+    
+    .delete-btn-abs { position: absolute; top: 0.25rem; right: 0.25rem; opacity: 0; transition: opacity 0.2s; z-index: 10; }
+    .message-bubble:hover .delete-btn-abs { opacity: 1; }
+    .delete-btn-abs button { background: rgba(255,255,255,0.7); border-radius: 9999px; padding: 0.25rem; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+    .delete-btn-abs button:hover { background: #fee2e2; color: #dc2626; }
+  </style>
+</head>
+<body class="min-h-screen gradient-bg flex flex-col">
+  <%- include('./partials/header') %>
+  <div class="flex flex-1 overflow-hidden rounded-3xl shadow-2xl m-4">
     <!-- Sidebar -->
-    <div class="w-full md:w-1/3 lg:w-1/4 bg-white border-r border-gray-200 overflow-y-auto">
-      <div class="p-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
-        <h1 class="text-xl font-bold text-gray-800">Chats</h1>
-        <% if (["admin", "staff"].includes(user.role)) { %>
-          <a href="/chat/users" class="text-blue-500 hover:underline text-sm">+ New Chat</a>
-        <% } %>
+    <aside class="w-full md:w-1/3 lg:w-1/4 sidebar-gradient text-white flex flex-col relative rounded-l-3xl">
+      <div class="p-6 border-b border-indigo-400/30 flex items-center justify-between sticky top-0 bg-indigo-600/90 z-10 rounded-tl-3xl backdrop-blur-sm">
+        <h1 class="text-2xl font-bold tracking-tight flex items-center gap-2">
+          <i class="fas fa-comments text-indigo-200"></i>
+          <span>Chat Conversations</span>
+        </h1>
+        <div class="relative">
+          <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full pulse-animation border border-white"></div>
+          <i class="fas fa-circle-notch text-indigo-200 animate-spin"></i>
+        </div>
       </div>
-
-      <div class="divide-y divide-gray-100">
-        <% if (["admin", "staff"].includes(user.role)) { %>
-          <% chats.forEach(chat => { %>
-            <a href="/chat/<%= chat.other_user_id %>" 
-              class="flex items-center gap-3 p-3 hover:bg-blue-50 transition-all duration-150 
-              <%= chat.other_user_id === admin.id ? 'bg-blue-100' : 'bg-white' %>">
-              <div class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold uppercase">
-                <%= chat.other_user_name.charAt(0) %>
+      
+      <div class="flex-1 overflow-y-auto py-4 px-3 space-y-3">
+        <% (chats || admins || []).forEach(chat => { %>
+          <a href="/chat/<%= chat.other_user_id || chat.id %>" 
+             class="flex items-center gap-3 p-3 rounded-xl transition-all duration-300 chat-item-hover 
+                    <%= (chat.other_user_id || chat.id) === admin.id ? 'bg-white/20' : 'bg-indigo-500/10' %>">
+            <% let avatar = chat.user_avatar || chat.avatar; %>
+            <% if (avatar) { %>
+              <div class="relative">
+                <img src="/<%= avatar %>" alt="Avatar" class="w-12 h-12 rounded-full object-cover shadow-lg border-2 border-indigo-300" />
+                <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border border-white"></div>
               </div>
-              <div class="flex-1">
-                <div class="flex justify-between text-sm font-medium text-gray-700">
-                  <span><%= chat.other_user_name %></span>
-                  <span class="text-xs text-gray-400"><%= new Date(chat.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %></span>
-                </div>
-                <p class="text-xs text-gray-500 truncate mt-0.5"><%= chat.last_message %></p>
+            <% } else { %>
+              <div class="w-12 h-12 bg-gradient-to-br from-indigo-300 to-purple-300 rounded-full flex items-center justify-center font-bold text-white text-xl shadow-lg">
+                <%= (chat.other_user_name || chat.fullname).charAt(0) %>
               </div>
-            </a>
-          <% }) %>
-        <% } else { %>
-          <% admins.forEach(adminItem => { %>
-            <a href="/chat/<%= adminItem.id %>" 
-              class="flex items-center gap-3 p-3 hover:bg-blue-50 transition-all duration-150 
-              <%= adminItem.id === admin.id ? 'bg-blue-100' : 'bg-white' %>">
-              <div class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold uppercase">
-                <%= adminItem.fullname.charAt(0) %>
+            <% } %>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-center">
+                <h3 class="text-sm font-semibold truncate"><%= chat.other_user_name || chat.fullname %></h3>
+                <span class="text-xs text-indigo-100/80 whitespace-nowrap">
+                  <%= chat.last_message_time ? new Date(chat.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '' %>
+                </span>
               </div>
-              <div class="flex-1">
-                <div class="flex justify-between text-sm font-medium text-gray-700">
-                  <span><%= adminItem.fullname %> (<%= adminItem.role %>)</span>
-                  <span class="text-xs text-gray-400">
-                    <%= adminItem.lastLogin ? new Date(adminItem.lastLogin).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A' %>
+              <p class="text-xs text-indigo-100/70 truncate mt-1"><%= chat.last_message || 'No messages yet' %></p>
+              <% if(chat.unread_count > 0) { %>
+                <div class="mt-1 flex justify-end">
+                  <span class="bg-pink-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    <%= chat.unread_count %> new
                   </span>
                 </div>
-              </div>
-            </a>
-          <% }) %>
-        <% } %>
+              <% } %>
+            </div>
+          </a>
+        <% }) %>
       </div>
-    </div>
+      
+      <div class="sticky bottom-0 p-4 bg-indigo-700/50 backdrop-blur-sm rounded-bl-3xl border-t border-indigo-400/20">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <% let userAvatar = user.avatar || ''; %>
+            <% if (userAvatar) { %>
+              <img src="/<%= userAvatar %>" alt="User Avatar" class="w-10 h-10 rounded-full border-2 border-indigo-300 shadow" />
+            <% } else { %>
+              <div class="w-10 h-10 bg-gradient-to-br from-purple-200 to-indigo-300 rounded-full flex items-center justify-center font-bold text-indigo-700 text-lg shadow">
+                <%= user.fullname.charAt(0) %>
+              </div>
+            <% } %>
+            <div>
+              <p class="text-sm font-medium text-white"><%= user.fullname %></p>
+              <p class="text-xs text-indigo-200 capitalize"><%= user.role %></p>
+            </div>
+          </div>
+          <button class="p-2 text-indigo-100 hover:text-white bg-indigo-600/30 hover:bg-indigo-600/50 rounded-full transition-all">
+            <i class="fas fa-cog"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
 
     <!-- Chat Area -->
-    <div class="hidden md:flex flex-1 flex-col overflow-hidden">
-      
+    <main class="flex-1 flex flex-col bg-white/90 backdrop-blur-sm min-h-0 rounded-r-3xl">
       <!-- Header -->
-      <div class="flex items-center gap-3 bg-white border-b border-gray-200 p-4 sticky top-0 z-10">
-        <div class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold uppercase">
-          <%= admin.fullname.charAt(0) %>
+      <div class="flex items-center justify-between bg-gradient-to-r from-indigo-600 to-blue-500 text-white rounded-tr-3xl px-6 py-4 shadow-lg">
+        <div class="flex items-center gap-4">
+          <% let headerAvatar = admin.user_avatar || admin.avatar; %>
+          <% if (headerAvatar) { %>
+            <div class="relative">
+              <img src="/<%= headerAvatar %>" alt="Avatar" class="w-14 h-14 rounded-full object-cover shadow-xl border-2 border-indigo-300" />
+              <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+            </div>
+          <% } else { %>
+            <div class="relative">
+              <div class="w-14 h-14 bg-gradient-to-br from-indigo-200 to-blue-300 rounded-full flex items-center justify-center font-extrabold text-3xl text-indigo-700 shadow-xl">
+                <%= admin.fullname.charAt(0) %>
+              </div>
+              <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+            </div>
+          <% } %>
+          <div class="flex flex-col">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+              <%= admin.fullname %>
+              <span class="text-xs bg-white/20 px-2 py-0.5 rounded-full">Verified</span>
+            </h2>
+            <span class="text-sm text-indigo-100 font-medium capitalize"><%= admin.role %></span>
+            <span class="text-xs font-semibold mt-1 flex items-center gap-1">
+              <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              <span>Active now</span>
+            </span>
+          </div>
         </div>
-        <h2 class="text-lg font-semibold text-gray-800"><%= admin.fullname %></h2>
+        <div class="flex items-center gap-3">
+          <!-- Mute/Unmute Conversation for staff, doctor, and admin only -->
+          <% if (['staff', 'doctor', 'admin'].includes(user.role)) { %>
+            <% if (!isMuted) { %>
+              <form action="/chat/mute/<%= admin.id %>" method="POST" style="display:inline;">
+                <button type="submit" class="text-xs px-4 py-2 rounded-full bg-yellow-400 text-white hover:bg-yellow-500 shadow font-semibold mr-2 flex items-center gap-2" title="Mute Conversation">
+                  <i class="fas fa-bell-slash"></i> Mute
+                </button>
+              </form>
+            <% } else { %>
+              <form action="/chat/unmute/<%= admin.id %>" method="POST" style="display:inline;">
+                <button type="submit" class="text-xs px-4 py-2 rounded-full bg-green-500 text-white hover:bg-green-600 shadow font-semibold mr-2 flex items-center gap-2" title="Unmute Conversation">
+                  <i class="fas fa-bell"></i> Unmute
+                </button>
+              </form>
+            <% } %>
+          <% } %>
+          <!-- Delete Conversation for all -->
+          <form action="/chat/delete/<%= admin.id %>" method="POST" style="display:inline;" onsubmit="return confirm('Delete this conversation? This cannot be undone.');">
+            <button type="submit" class="text-xs px-4 py-2 rounded-full bg-red-500 text-white hover:bg-red-600 shadow font-semibold flex items-center gap-2" title="Delete Conversation">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </form>
+          <button class="p-2 text-indigo-100 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all shadow" title="Video Call">
+            <i class="fas fa-video"></i>
+          </button>
+          <button class="p-2 text-indigo-100 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all shadow" title="Voice Call">
+            <i class="fas fa-phone"></i>
+          </button>
+          <div class="relative">
+            <button class="p-2 text-indigo-100 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all shadow" title="More options">
+              <i class="fas fa-ellipsis-h"></i>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Messages -->
-      <div id="chat" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50 max-h-[calc(90vh-112px)]">
+      <div id="chat" class="flex-1 flex flex-col p-6 overflow-y-auto space-y-4 bg-gradient-to-b from-white/90 to-indigo-50/80 min-h-0">
         <% messages.forEach(msg => { %>
-          <div class="flex <%= msg.sender_id === user.id ? 'justify-end' : 'justify-start' %>">
-            <div class="max-w-md px-4 py-2 rounded-2xl shadow-sm text-sm transition-all duration-150 
-              <%= msg.sender_id === user.id ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white text-gray-900 rounded-bl-none border border-gray-200' %>">
-              <p><%= msg.content %></p>
-              <span class="block text-xs mt-1 opacity-75 <%= msg.sender_id === user.id ? 'text-blue-100' : 'text-gray-400' %>">
-                <%= new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
-              </span>
+          <div class="flex <%= msg.sender_id === user.id ? 'justify-end' : 'justify-start' %> items-end group">
+            <div class="max-w-xl px-5 py-3 rounded-2xl shadow-lg text-sm font-medium transition-all duration-300 message-bubble
+              <%= msg.sender_id === user.id ? 'sent bg-gradient-to-r from-indigo-500 to-blue-500 text-white' : 'received bg-white text-indigo-900 border border-indigo-100' %> relative">
+              <p class="mb-1"><%= msg.content %></p>
+              <div class="flex items-center justify-end gap-1 mt-1">
+                <span class="text-xs <%= msg.sender_id === user.id ? 'text-indigo-100/70' : 'text-indigo-400/70' %>">
+                  <%= new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+                </span>
+                <% if (msg.sender_id === user.id) { %>
+                  <i class="fas fa-check-double text-xs <%= msg.read ? 'text-blue-300' : 'text-indigo-100/50' %>"></i>
+                <% } %>
+              </div>
+              <% if ((["admin", "staff", "doctor"].includes(user.role.toLowerCase())) && msg.sender_id === user.id) { %>
+                <span class="delete-btn-abs">
+                  <button onclick="confirmDeleteMessage('<%= msg.id %>')" title="Delete Message">
+                    <i class="fas fa-times text-xs"></i>
+                  </button>
+                </span>
+              <% } %>
             </div>
           </div>
         <% }) %>
-
+        
         <!-- Typing Indicator -->
         <div id="typingIndicator" class="hidden flex justify-start">
-          <div class="px-4 py-2 rounded-2xl bg-gray-300 text-gray-700 text-sm">
-            <span class="typing-dots">Typing</span>
-            <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+          <div class="px-5 py-2 rounded-2xl typing-indicator text-indigo-700 text-sm font-medium shadow-md">
+            <div class="flex items-center gap-1">
+              <span>Typing</span>
+              <div class="flex">
+                <span class="dot">.</span>
+                <span class="dot">.</span>
+                <span class="dot">.</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Message Input -->
-      <div class="bg-white p-3 border-t border-gray-200 flex items-center space-x-3">
-        <input id="messageInput" type="text" placeholder="Aa"
-          class="flex-1 px-4 py-2 text-sm rounded-full border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" />
-        <button id="sendButton" onclick="sendMessage()"
-          class="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-          </svg>
-        </button>
+      <div class="bg-white/95 rounded-br-3xl px-6 py-4 shadow-lg border-t border-indigo-100/50">
+        <form onsubmit="sendMessage(); return false;" class="flex items-center gap-3">
+          <button type="button" class="p-2 text-indigo-400 hover:text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-full transition-all shadow" title="Attach file">
+            <i class="fas fa-paperclip"></i>
+          </button>
+          <button type="button" class="p-2 text-indigo-400 hover:text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-full transition-all shadow" title="Emoji">
+            <i class="far fa-smile"></i>
+          </button>
+          <input id="messageInput" type="text" placeholder="Type your message..." autocomplete="off"
+            class="flex-1 px-5 py-3 text-sm rounded-full border border-indigo-200 focus:border-indigo-400 focus:ring-0 message-input-glow transition-all shadow-sm bg-white" />
+          <button id="sendButton" type="submit"
+            class="p-3 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-full shadow-md send-button-glow hover:scale-105 transition-all duration-200 flex items-center justify-center">
+            <i class="fas fa-paper-plane text-lg"></i>
+          </button>
+        </form>
       </div>
-    </div>
+    </main>
   </div>
-</div>
 
-<style>
-  .dot {
-    animation: dot-flashing 1s infinite linear alternate;
-    margin-left: 2px;
-  }
-  .dot:nth-child(2) { animation-delay: 0.2s; }
-  .dot:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes dot-flashing {
-    0% { opacity: 0.2; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.1); }
-    100% { opacity: 0.2; transform: scale(1); }
-  }
-</style>
+  <!-- Inject chat variables as data attributes to avoid linter errors -->
+  <div id="chat-vars" 
+    data-user-id="<%= user.id %>" 
+    data-admin-id="<%= admin.id %>" 
+    data-room="<%= room %>">
+  </div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  const socket = io('http://localhost:3000', {
-    withCredentials: true,
-    transports: ['websocket', 'polling']
-  });
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Read chat variables from DOM
+    const chatVars = document.getElementById('chat-vars');
+    const userId = parseInt(chatVars.getAttribute('data-user-id'));
+    const adminId = parseInt(chatVars.getAttribute('data-admin-id'));
+    const room = chatVars.getAttribute('data-room');
 
-  const userId = <%= user.id %>;
-  const adminId = <%= admin.id %>;
-  const room = '<%= room %>';
+    const socket = io('http://localhost:3000', {
+      withCredentials: true,
+      transports: ['websocket', 'polling']
+    });
 
-  const chat = document.getElementById('chat');
-  const messageInput = document.getElementById('messageInput');
-  const sendButton = document.getElementById('sendButton');
-  const typingIndicator = document.getElementById('typingIndicator');
+    const chat = document.getElementById('chat');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const typingIndicator = document.getElementById('typingIndicator');
 
-  socket.on('connect', () => {
-    socket.emit('joinRoom', { userId, adminId });
-  });
+    socket.on('connect', () => {
+      socket.emit('joinRoom', { userId, adminId });
+    });
 
-  socket.on('connect_error', (error) => {
-    alert('Failed to connect: ' + error.message);
-  });
+    socket.on('connect_error', (error) => {
+      showNotification('Connection Error', 'Failed to connect to chat server', 'error');
+    });
 
-  socket.on('error', (msg) => {
-    alert('Server error: ' + msg);
-  });
+    socket.on('error', (msg) => {
+      showNotification('Server Error', msg, 'error');
+    });
 
-  socket.on('receiveMessage', (msg) => {
-    const div = document.createElement('div');
-    div.className = `flex ${msg.sender_id === userId ? 'justify-end' : 'justify-start'}`;
-    div.innerHTML = `
-      <div class="max-w-md px-4 py-2 rounded-2xl shadow-sm text-sm transition-all duration-150 
-        ${msg.sender_id === userId ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'}">
-        <p>${msg.content}</p>
-        <span class="block text-xs mt-1 opacity-75 ${msg.sender_id === userId ? 'text-blue-100' : 'text-gray-400'}">
-          ${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </span>
-      </div>
-    `;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-    typingIndicator.classList.add('hidden');
-  });
+    socket.on('receiveMessage', (msg) => {
+      const div = document.createElement('div');
+      div.className = `flex ${msg.sender_id === userId ? 'justify-end' : 'justify-start'} items-end group`;
+      div.innerHTML = `
+        <div class="max-w-xl px-5 py-3 rounded-2xl shadow-lg text-sm font-medium transition-all duration-300 message-bubble
+          ${msg.sender_id === userId ? 'sent bg-gradient-to-r from-indigo-500 to-blue-500 text-white' : 'received bg-white text-indigo-900 border border-indigo-100'}">
+          <p class="mb-1">${msg.content}</p>
+          <div class="flex items-center justify-end gap-1 mt-1">
+            <span class="text-xs ${msg.sender_id === userId ? 'text-indigo-100/70' : 'text-indigo-400/70'}">
+              ${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+            ${msg.sender_id === userId ? '<i class="fas fa-check-double text-xs text-blue-300"></i>' : ''}
+          </div>
+        </div>
+      `;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+      typingIndicator.classList.add('hidden');
+      
+      // Play message received sound
+      playSound('message');
+    });
 
-  // Typing logic
-  let typingTimeout;
-  messageInput.addEventListener('input', () => {
-    socket.emit('typing', { userId, adminId, room });
-    clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => {
+    // Typing logic
+    let typingTimeout;
+    messageInput.addEventListener('input', () => {
+      socket.emit('typing', { userId, adminId, room });
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        socket.emit('stopTyping', { userId, adminId, room });
+      }, 1000);
+    });
+
+    socket.on('typing', () => {
+      typingIndicator.classList.remove('hidden');
+      chat.scrollTop = chat.scrollHeight;
+    });
+
+    socket.on('stopTyping', () => {
+      typingIndicator.classList.add('hidden');
+    });
+
+    function sendMessage() {
+      const content = messageInput.value.trim();
+      if (!content) return;
+
+      sendButton.disabled = true;
+      sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      
+      socket.emit('sendMessage', { userId, adminId, content }, (response) => {
+        sendButton.disabled = false;
+        sendButton.innerHTML = '<i class="fas fa-paper-plane text-lg"></i>';
+        
+        if (response?.error) {
+          showNotification('Send Failed', response.error, 'error');
+        } else {
+          // Play message sent sound
+          playSound('sent');
+        }
+      });
+
+      messageInput.value = '';
       socket.emit('stopTyping', { userId, adminId, room });
-    }, 1000);
-  });
+    }
 
-  socket.on('typing', () => {
-    typingIndicator.classList.remove('hidden');
-    chat.scrollTop = chat.scrollHeight;
-  });
+    function confirmDeleteMessage(messageId) {
+      if (confirm('Are you sure you want to delete this message?')) {
+        fetch(`/chat/delete-message/${messageId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showNotification('Message Deleted', 'Your message has been deleted', 'success');
+            // Reload or remove message from UI
+            location.reload();
+          } else {
+            showNotification('Error', data.error || 'Failed to delete message', 'error');
+          }
+        })
+        .catch(error => {
+          showNotification('Error', 'Network error occurred', 'error');
+        });
+      }
+    }
 
-  socket.on('stopTyping', () => {
-    typingIndicator.classList.add('hidden');
-  });
+    function showNotification(title, message, type) {
+      // You can implement a nice notification system here
+      alert(`${title}: ${message}`);
+    }
 
-  function sendMessage() {
-    const content = messageInput.value.trim();
-    if (!content) return;
+    function playSound(type) {
+      // You can implement sound effects here
+      // For example using the Web Audio API or HTML5 Audio
+    }
 
-    sendButton.disabled = true;
-    socket.emit('sendMessage', { userId, adminId, content }, (response) => {
-      sendButton.disabled = false;
-      if (response?.error) {
-        alert('Failed to send message: ' + response.error);
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
       }
     });
 
-    messageInput.value = '';
-    socket.emit('stopTyping', { userId, adminId, room });
-  }
-
-  messageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      sendMessage();
-    }
-  });
-
-  chat.scrollTop = chat.scrollHeight;
-</script>
-
-<%- include('./partials/footer') %>
+    // Auto-scroll to bottom of chat
+    chat.scrollTop = chat.scrollHeight;
+  </script>
+</body>
+</html>
